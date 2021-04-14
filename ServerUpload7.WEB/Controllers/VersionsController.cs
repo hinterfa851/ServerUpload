@@ -10,6 +10,7 @@ using ServerUpload7.DAL.Services;
 using Version = ServerUpload7.DAL.Entities.Version;
 using ServerUpload7.DAL.Entities;
 using System.IO;
+using AutoMapper;
 
 namespace ServerUpload7.WEB.Controllers
 {
@@ -17,17 +18,21 @@ namespace ServerUpload7.WEB.Controllers
     {
         
         private readonly IVersionsService _versionsService;
+        private IMapper _mapper;
         public IWebHostEnvironment _appEnvironment;
-        public VersionsController(IVersionsService materialService, IWebHostEnvironment appEnvironment)
+
+        public VersionsController(IVersionsService materialService, IWebHostEnvironment appEnvironment, IMapper mapper)
         {
-              this._versionsService = materialService;
+            this._mapper = mapper;
+            this._versionsService = materialService;
             this._appEnvironment = appEnvironment;
         }
         
         [HttpPost("CreateVersion")]
-        public  Version CreateVersion(IFormFile uploadedFile, string Name, string Category)
+        public  VersionView CreateVersion(IFormFile uploadedFile, string Name, string Category)
         {
-            Version version;
+            VersionView version;
+
             string path = _versionsService.GetPath(Category, Name);
             if (path == null)
                 return null;
@@ -35,7 +40,8 @@ namespace ServerUpload7.WEB.Controllers
             using (var stream = new FileStream( path, FileMode.Create))
             {
                 uploadedFile.CopyTo(stream);
-                version = _versionsService.CreateVersion(Name, Category, _appEnvironment.WebRootPath, uploadedFile.Length);
+                version = _mapper.Map<VersionView>(_versionsService.CreateVersion(Name, Category, _appEnvironment.WebRootPath, uploadedFile.Length));
+
             }
             return version;
         }

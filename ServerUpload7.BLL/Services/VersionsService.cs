@@ -8,6 +8,7 @@ using ServerUpload7.DAL.Entities;
 using Version = ServerUpload7.DAL.Entities.Version;
 using System.IO;
 using ServerUpload7.DAL.Interfaces;
+using AutoMapper;
 
 namespace ServerUpload7.BLL.Services
 {
@@ -22,7 +23,6 @@ namespace ServerUpload7.BLL.Services
 
         private string CrName(string Input, int Num_v)
         {
-            // service for service 
             string Result;
             var rr = Input.Split(".");
             int len = rr.Length;

@@ -15,6 +15,7 @@ namespace ServerUpload7.DAL.Repositories
     public class EFUnitOfWork : IUnitOfWork
     {
         // **** USELESS???? *****
+        
         private ApplicationContext db;
         private MaterialsRepository materialRepository;
         private VersionsRepository versionRepository;
@@ -68,5 +69,6 @@ namespace ServerUpload7.DAL.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        
     }
 }

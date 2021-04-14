@@ -40,20 +40,20 @@ namespace ServerUpload7.DAL.Repositories
         public Material Find(Func<Material, Boolean> predicate)
         {
             var res =  db.Materials.Include(o => o.Versions);
+  //          var test = res.FirstOrDefaultAsync(x => predicate(x));            ???
             return res.FirstOrDefault(predicate);
-
         }
 
-        public void Delete(int id)
+        public async void Delete(int id)
         {
-            Material book = db.Materials.Find(id);
-            if (book != null)
-                db.Materials.Remove(book);
+            var to_del = await db.Materials.FindAsync(id);
+            if (to_del != null)
+                db.Materials.Remove(to_del);
         }
 
         public void Save()
         {
-            db.SaveChanges();
+            db.SaveChangesAsync();
         }
     }
 }

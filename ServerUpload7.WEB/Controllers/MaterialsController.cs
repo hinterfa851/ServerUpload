@@ -9,8 +9,7 @@ using ServerUpload7.WEB.Resources;
 using ServerUpload7.BLL.Services;
 using System.IO;
 using ServerUpload7.DAL.Services;
-
-// to del 
+using AutoMapper;
 using ServerUpload7.DAL.Entities;
 
 
@@ -21,39 +20,37 @@ namespace ServerUpload7.WEB.Controllers
     {
 
         private readonly IMaterialsService _materialsService;
-  //      private readonly IMapper _mapper;
+        private IMapper _mapper;
         public IWebHostEnvironment _appEnvironment;
-
-        public MaterialsController(IMaterialsService materialService, IWebHostEnvironment appEnvironment)
+        
+        public MaterialsController(IMaterialsService materialService, IWebHostEnvironment appEnvironment, IMapper mappe)
         {
-    //        this._mapper = mapper;
+            this._mapper = mappe;
             this._materialsService = materialService;
             this._appEnvironment = appEnvironment;
         }
 
+
         [HttpPost("Crmat")]
-        public  Material CreateMaterial(IFormFile uploadedFile, string category)
-        {   
-            // potential validator
-            // if (validation() != ok) return (fail())
-            
+        public  MaterialView CreateMaterial(IFormFile uploadedFile, string category)
+        {
             string path = _materialsService.GetPath(category, uploadedFile.FileName, 1);
             if (path == null)
             {
                 Console.WriteLine("null returned");
                 return null;
             }
-            var Result = new Material();
+            Console.WriteLine("null returned");
+            var Result = new MaterialView();
             using (var stream = new FileStream(path, FileMode.Create))
             {
                 uploadedFile.CopyTo(stream);
-                Result = _materialsService.CreateMaterial(stream, category, uploadedFile.FileName, _appEnvironment.WebRootPath, uploadedFile.Length);
+                Result = _mapper.Map<MaterialView>(_materialsService.CreateMaterial(stream, category, uploadedFile.FileName, _appEnvironment.WebRootPath, uploadedFile.Length));
             }
             return Result;
         }
         
         [HttpPost("DownloadActual")]
-        // make it async???
         public  FileResult DownloadActualVersion(string Name, string Category)
         {
             
@@ -64,9 +61,9 @@ namespace ServerUpload7.WEB.Controllers
         }
 
         [HttpGet("GetMaterialInfo")]
-        public ActionResult<MaterialResource> GetMaterialInfo(string Name, string Category)
+        public ActionResult<MaterialView> GetMaterialInfo(string Name, string Category)
         {
-            var Result =  _materialsService.GetMaterialInfo(Name, Category);
+            var Result = _mapper.Map<MaterialView>(_materialsService.GetMaterialInfo(Name, Category));
             if (Result == null)    
                 return null;
             return Ok(Result);
@@ -82,9 +79,9 @@ namespace ServerUpload7.WEB.Controllers
         }
 
         [HttpGet("FilterMat")]
-        public ActionResult<List<MaterialResource>> FilterMat(string Category)
+        public ActionResult<List<MaterialView>> FilterMat(string Category)
         {
-            var Result =  _materialsService.FilterMat(Category);
+            var Result = _mapper.Map<IEnumerable<MaterialView>>(_materialsService.FilterMat(Category));
             if (Result == null)
                 return null;
             return Ok(Result);

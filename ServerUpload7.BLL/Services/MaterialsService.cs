@@ -5,9 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServerUpload7.DAL.Interfaces;
 using ServerUpload7.DAL.Entities;
-using ServerUpload7.BLL.DTO;
 using System.IO;
-using AutoMapper;
 using Version = ServerUpload7.DAL.Entities.Version;
 using ServerUpload7.DAL.Services;
 
@@ -21,9 +19,8 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
-        private string CrName(string Input, int Num_v)
+        public string CrName(string Input, int Num_v)
         {
-            // service for service 
             string Result;
             var rr = Input.Split(".");
             int len = rr.Length;
@@ -42,7 +39,6 @@ namespace ServerUpload7.BLL.Services
                 Result = $"{NewStr}_v{Num_v}.{rr.Last()}";
             return Result;
         }
-
         private string CrNameWithoutExt(string FileName)
         {
             string NewStr = "";
