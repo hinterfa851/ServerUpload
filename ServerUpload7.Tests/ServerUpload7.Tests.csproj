@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ServerUpload7.BLL\ServerUpload7.BLL.csproj" />
-    <ProjectReference Include="..\ServerUpload7.WEB\ServerUpload7.WEB.csproj" />
+    <ProjectReference Include="..\ServerUpload7.WEB\ServerUpload7.Web.csproj" />
   </ItemGroup>
 
 </Project>

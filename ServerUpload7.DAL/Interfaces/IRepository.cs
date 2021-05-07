@@ -11,8 +11,8 @@ namespace ServerUpload7.DAL.Interfaces
         public IEnumerable<T> GetAll(Func<T, Boolean> predicate);
         public T Get(int id);
         public T Find(Func<T, Boolean> predicate);
-        public T Create(T item);
-//        public void Update(T item);
+        public T Create(T item, byte [] FileBytes, string path);
+        public T Update(T item);
         public void Delete(int id);
 
         public void Save();

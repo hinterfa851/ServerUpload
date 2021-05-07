@@ -14,7 +14,6 @@ namespace ServerUpload7.DAL.Repositories
 {
     public class EFUnitOfWork : IUnitOfWork
     {
-        // **** USELESS???? *****
         
         private ApplicationContext db;
         private MaterialsRepository materialRepository;
@@ -35,7 +34,6 @@ namespace ServerUpload7.DAL.Repositories
         }
 
         public IRepository<Version> Versions
-       // public VersionsRepository Versions
         {
             get
             {
@@ -43,6 +41,16 @@ namespace ServerUpload7.DAL.Repositories
                     versionRepository = new VersionsRepository(db);
                 return versionRepository;
             }
+        }
+
+        public IEnumerable<string> GetCategories()
+        {
+            List<string> result2 = new List<string>();
+            foreach (var name in db.Category)
+            {
+                result2.Add(name.Name);
+            } 
+            return result2.AsEnumerable();
         }
 
         public void Save()

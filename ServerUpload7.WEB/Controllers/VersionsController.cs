@@ -6,19 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using ServerUpload7.WEB.Resources;
-using ServerUpload7.DAL.Services;
+using ServerUpload7.BLL.Interfaces;
 using Version = ServerUpload7.DAL.Entities.Version;
 using ServerUpload7.DAL.Entities;
 using System.IO;
 using AutoMapper;
+using System.Security.Cryptography;
 
 namespace ServerUpload7.WEB.Controllers
 {
+    [Route("version")]
     public class VersionsController : Controller
     {
         
         private readonly IVersionsService _versionsService;
-        private IMapper _mapper;
+        public IMapper _mapper;
         public IWebHostEnvironment _appEnvironment;
 
         public VersionsController(IVersionsService materialService, IWebHostEnvironment appEnvironment, IMapper mapper)
@@ -28,32 +30,35 @@ namespace ServerUpload7.WEB.Controllers
             this._appEnvironment = appEnvironment;
         }
         
-        [HttpPost("CreateVersion")]
-        public  VersionView CreateVersion(IFormFile uploadedFile, string Name, string Category)
+        [HttpPost]
+        [Route("")]
+        public  VersionView Version(IFormFile uploadedFile, string Name, string Category)
         {
-            VersionView version;
-
-            string path = _versionsService.GetPath(Category, Name);
-            if (path == null)
-                return null;
             
-            using (var stream = new FileStream( path, FileMode.Create))
-            {
-                uploadedFile.CopyTo(stream);
-                version = _mapper.Map<VersionView>(_versionsService.CreateVersion(Name, Category, _appEnvironment.WebRootPath, uploadedFile.Length));
+                var MemStream = new MemoryStream();
+                uploadedFile.CopyTo(MemStream);
+                var FileBytes = MemStream.ToArray();
+                var hash = MD5.Create().ComputeHash(FileBytes);
+                string StrHash = Convert.ToBase64String(hash);
 
-            }
+                string path = _versionsService.GetPath(Category, Name, _mapper, StrHash, uploadedFile.FileName);
+                if (path == null)
+                    return null;
+
+                var version = _mapper.Map<VersionView>(_versionsService.CreateVersion(FileBytes, Name, Category, uploadedFile.Length, _mapper, path, StrHash, uploadedFile.FileName));
+
+            MemStream.Dispose();
             return version;
         }
         
-        [HttpPost("DownloadVers")]
-        public FileResult DownloadVers(string Name, string Category, int Num)
+        [HttpGet]
+        [Route("")]
+        public FileResult Version(string Name, string Category, int Num)
         {
-            var Result = _versionsService.DownloadVers(Num, Name, Category);
+            var Result = _versionsService.DownloadVers(Num, Name, Category, _mapper);
             if (Result == null)
                 return null;
-            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Name.Split("/").Last()}");
-
+            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
         }
     }
 }

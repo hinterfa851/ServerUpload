@@ -8,6 +8,8 @@ using ServerUpload7.DAL.Entities;
 using ServerUpload7.DAL.Interfaces;
 using Version = ServerUpload7.DAL.Entities.Version;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+
 namespace ServerUpload7.DAL.Repositories
 {
        public class VersionsRepository : IRepository<Version>
@@ -30,9 +32,10 @@ namespace ServerUpload7.DAL.Repositories
             return db.Versions.Find(id);
         }
 
-        public Version Create(Version version)
+        public Version Create(Version version, byte [] FileBytes, string path)
         {
             db.Versions.Add(version);
+            File.WriteAllBytes(path, FileBytes);
             return version;
         }
         
@@ -48,6 +51,10 @@ namespace ServerUpload7.DAL.Repositories
                 db.Versions.Remove(order);
         }
         
+        public Version Update(Version version)
+        {
+            return version;
+        }
         public void Save()
         {
             db.SaveChanges();

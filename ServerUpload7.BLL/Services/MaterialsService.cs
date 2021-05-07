@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Entities;
+using ServerUpload7.BLL.ModelDTO;
 using System.IO;
 using Version = ServerUpload7.DAL.Entities.Version;
-using ServerUpload7.DAL.Services;
+using ServerUpload7.BLL.Interfaces;
+using AutoMapper;
+using ServerUpload7.DAL.Entities;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace ServerUpload7.BLL.Services
 {
@@ -19,130 +23,99 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
-        public string CrName(string Input, int Num_v)
+        public string GetPath(string category, string FileName, int number, IMapper _mapper, string StrHash)
         {
-            string Result;
-            var rr = Input.Split(".");
-            int len = rr.Length;
-            string NewStr = "";
-            int i = 0;
-            while (i < len - 1)
-            {
-                NewStr += rr[i];
-                i++;
-            }
-            if (Num_v == 1)
-            {
-                Result = $"{NewStr}_v{Num_v}.{rr[i]}";
-            }
-            else
-                Result = $"{NewStr}_v{Num_v}.{rr.Last()}";
-            return Result;
-        }
-        private string CrNameWithoutExt(string FileName)
-        {
-            string NewStr = "";
-            int i = 0;
-            var arr = FileName.Split(".");
-            int len = arr.Length;
-
-            while (i < len - 1)
-            {
-                NewStr += arr[i];
-                i++;
-            }
-            return NewStr;
-        }
-
-        public string GetPath(string category, string FileName, int number)
-        {
-            if ((category == "App" || category == "Presentation" || category == "Other"))
-            {
-                var helper = FileName.Split(".");
-                string DirName;
-
-                if (helper == null)
-                    DirName = FileName;
-                else
-                    DirName = CrNameWithoutExt(FileName);
-
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == FileName);
+            if (_unitOfWork.GetCategories().Any(m => m == category))
+            {                 
+                foreach (var v in _unitOfWork.Versions.GetAll(x => x.StrHash != null))
+                {
+                    var ver = _mapper.Map<VersionDTO>(v);
+                    if (ver.StrHash == StrHash)
+                        return null;
+                }
+                var Mat = _mapper.Map<MaterialDTO>(_unitOfWork.Materials.Find(u => u.Category == category && u.Name == FileName));
                 if (Mat == null)
                 {
-                    Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + category + "/" + DirName);
-                    return "Files/" + category + "/" + DirName + "/" + CrName(FileName, number);
+                    Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + category + "/" + ICommon.GetName(FileName));
+                    return "Files/" + category + "/" + ICommon.GetName(FileName) + "/" + ICommon.GetVersion(FileName, FileName, number);
                 }
             }
             return null;
         }
 
-        public Material CreateMaterial(Stream uploadedFile, string Category, string FileName, string WebRootPath, long Size)
+        public MaterialDTO CreateMaterial(Byte [] FileBytes, string Category, string FileName, long Size, IMapper _mapper, string path, string StrHash)
         {
-            Console.WriteLine($"v1{Category}");
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))      // !(_context.Files.Any(Mat => Mat.Name == uploadedFile.FileName) 
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
                 Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/Files/" + Category + "/" + FileName);
-                var Mat = new Material { Name = FileName, Category = Category };
-                var Vers = new Version { Name = CrName(FileName, 1), FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
-                Mat.Versions = new List<Version>();
-                Mat.Versions.Add(Vers);
 
-                _unitOfWork.Materials.Create(Mat);
+                var Mat = new MaterialDTO { Name = FileName, Category = Category };
+                var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, FileName, 1), StrHash = StrHash, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
+               
+                Mat.Versions = new List<VersionDTO>();   
+                Mat.Versions.Add(Vers);
+                _unitOfWork.Materials.Create(_mapper.Map<Material>(Mat), FileBytes, path);
                 return (Mat);
             }
-            Console.WriteLine($"First contition falls {Category} ");
             return (null);
         }
 
-        public string DownloadActualVersion(string Name, string Category)
+        public string DownloadActualVersion(string Name, string Category, IMapper _mapper)
         {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
-               var material =  _unitOfWork.Materials.Find(m =>  m.Name == Name && m.Category == Category); // may not work properly
+                var material =  _unitOfWork.Materials.Find(m =>  m.Name == Name && m.Category == Category); 
                 if (material == null)
                     return null;
                var version = material.Versions.Last();
-               return Category + "/" + CrNameWithoutExt(Name) + "/" + version.Name; 
+               return Category + "/" + ICommon.GetName(Name) + "/" + version.Name;
             }
             return null;
         }
 
-        public Material GetMaterialInfo(string Name, string Category)
+        public MaterialDTO GetMaterialInfo(string Name, string Category, IMapper _mapper)
         {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); // may not work properly
-                return material;
+                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); 
+                return _mapper.Map<MaterialDTO>(material);
             }
             return null;
         }
 
-        public int ChangeCategory(string Name, string OldCategory, string NewCategory)
+        public int ChangeCategory(string Name, string OldCategory, string NewCategory, IMapper _mapper)
         {
-            if ((OldCategory == "App" || OldCategory == "Presentation" || OldCategory == "Other") && (NewCategory == "App" || NewCategory == "Presentation" || NewCategory == "Other") && OldCategory != NewCategory)
+            if ((_unitOfWork.GetCategories().Any(m => m == OldCategory)) && 
+                (_unitOfWork.GetCategories().Any(m => m == NewCategory)) && OldCategory != NewCategory)
             {
                 // check material
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == OldCategory); // may not work properly
-                var material2 = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == NewCategory);
+                var material = _mapper.Map<MaterialDTO>(_unitOfWork.Materials.Find(m => m.Name == Name && m.Category == OldCategory)); // may not work properly
+                var material2 = _mapper.Map<MaterialDTO>(_unitOfWork.Materials.Find(m => m.Name == Name && m.Category == NewCategory));
                 if (material2 != null || material == null)
                 {
                     return 0;
                 }
                 material.Category = NewCategory;
-                _unitOfWork.Materials.Save();
-                Directory.Move("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + OldCategory + "/" + CrNameWithoutExt(material.Name), "C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + NewCategory + "/" + CrNameWithoutExt(material.Name));
+                _unitOfWork.Materials.Update(_mapper.Map<Material>(material));
+                var DirName = ICommon.GetName(material.Name);
+                Directory.Move("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + OldCategory + "/" + DirName, "C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + NewCategory + "/" + DirName);
                 return 1;
             }
             return 0;
         }
 
-        public IEnumerable<Material> FilterMat(string Category)
+        public IEnumerable<MaterialDTO> FilterMat(string Category, IMapper _mapper)
         {
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
 
                 var Materials = _unitOfWork.Materials.GetAll(m => m.Category == Category);
-                return Materials;
+                List<MaterialDTO> result = new List<MaterialDTO>();
+                foreach (var i in Materials)
+                {
+                    result.Add(_mapper.Map<MaterialDTO>(i));
+                }
+                return result.AsEnumerable();
             }
             return null;
 

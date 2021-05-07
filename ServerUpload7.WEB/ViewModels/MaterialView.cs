@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace ServerUpload7.WEB.Resources
 {
+    // Оставил нейминг потому что добавил DTO в BLL
     public class MaterialView
     {
         public string Name { get; set; }

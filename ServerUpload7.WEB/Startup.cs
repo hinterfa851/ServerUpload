@@ -15,8 +15,8 @@ using ServerUpload7.DAL.EF;
 using Microsoft.EntityFrameworkCore;
 using ServerUpload7.DAL.Repositories;
 using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Services;
 using ServerUpload7.BLL.Services;
+using ServerUpload7.BLL.Interfaces;
 using AutoMapper;
 
 namespace ServerUpload7.WEB
@@ -43,6 +43,7 @@ namespace ServerUpload7.WEB
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ServerUpload7.WEB", Version = "v1" });
             });
+     
             services.AddAutoMapper(typeof(Startup));
         }
 

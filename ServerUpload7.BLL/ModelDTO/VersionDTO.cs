@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace ServerUpload7.DAL.Entities
+namespace ServerUpload7.BLL.ModelDTO
 {
-    public class Version
+    public class VersionDTO
     {
-
         public int Id { get; set; }
-
         public string Name { get; set; }
-        public DateTime UploadTime { get; set; }
-
         public string StrHash { get; set; }
+        public DateTime UploadTime { get; set; }
         public long FileSize { get; set; }
         public int MaterialId { get; set; }
-        public Material Material { get; set; }
+        public MaterialDTO Material { get; set; }
 
     }
 }

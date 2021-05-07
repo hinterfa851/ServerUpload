@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ServerUpload7.DAL.Services;
+using ServerUpload7.BLL.Interfaces;
 using ServerUpload7.DAL.Entities;
 using Version = ServerUpload7.DAL.Entities.Version;
 using System.IO;
 using ServerUpload7.DAL.Interfaces;
 using AutoMapper;
+using ServerUpload7.BLL.ModelDTO;
 
 namespace ServerUpload7.BLL.Services
 {
@@ -20,89 +21,64 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
-
-        private string CrName(string Input, int Num_v)
+        public string GetPath(string category, string MatName, IMapper _mapper, string StrHash, string FileName)
         {
-            string Result;
-            var rr = Input.Split(".");
-            int len = rr.Length;
-            string NewStr = "";
-            int i = 0;
-            while (i < len - 1)
+            if (_unitOfWork.GetCategories().Any(m => m == category))
             {
-                NewStr += rr[i];
-                i++;
-            }
-            if (Num_v == 1)
-            {
-                Result = $"{NewStr}_v{Num_v}.{rr[i]}";
-            }
-            else
-                Result = $"{NewStr}_v{Num_v}.{rr.Last()}";
-            return Result;
-        }
-        private string CrNameWithoutExt(string FileName)
-        {
-            string NewStr = "";
-            int i = 0;
-            var arr = FileName.Split(".");
-            int len = arr.Length;
-
-            while (i < len - 1)
-            {
-                NewStr += arr[i];
-                i++;
-            }
-            return NewStr;
-        }
-        public string GetPath(string category, string FileName)
-        {
-            if ((category == "App" || category == "Presentation" || category == "Other"))
-            {
-                var helper = FileName.Split(".");
-                string DirName;
-
-                if (helper == null)
-                    DirName = FileName;
-                else
-                    DirName = CrNameWithoutExt(FileName);
-
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == FileName);
-
-                if (Mat != null)            // ********** CHEK THIS ONE *********
+                var Mat = _unitOfWork.Materials.Find(m => m.Name == MatName && m.Category == category);
+                if (Mat != null)            
                 {
-                    if (helper == null)
+                    string DirName = ICommon.GetName(MatName);
+                    foreach (var v in Mat.Versions)
+                    {
+                        var Vers = _mapper.Map<VersionDTO>(v);
+                        if (Vers.StrHash == StrHash)
+                            return null;
+                    }
+                    if (!FileName.Contains('.'))
                         return "Files/" + category + "/" + DirName + "/" + FileName + $"_v{Mat.Versions.Count + 1}";
                     else
-                        return "Files/" + category + "/" + DirName + "/" + CrName(FileName, Mat.Versions.Count + 1);
+                        return "Files/" + category + "/" + DirName + "/" + ICommon.GetVersion(FileName, MatName, Mat.Versions.Count + 1);
                 }
             }
             return null;
         }
-        public Version CreateVersion(string Name, string Category, string WebRootPath, long Size)
+        public VersionDTO CreateVersion(byte [] FileBytes, string Name, string Category, long Size, IMapper _mapper, string path, string StrHash, string FileName)
         {
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))      // !(_context.Files.Any(Mat => Mat.Name == uploadedFile.FileName) 
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == Category && u.Name == Name);
-                if (Mat == null)
+                var Material = _unitOfWork.Materials.Find(u => u.Category == Category && u.Name == Name);
+                if (Material == null)
                     return null;
-                var Vers = new Version { Name = CrName(Name, Mat.Versions.Count + 1), FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
+                /*
+                var Mat = _mapper.Map<MaterialDTO>(Material);
+                var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, Name, Mat.Versions.Count), StrHash = StrHash, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
+                //         _unitOfWork.Versions.Create(_mapper.Map<Version>(Vers), FileBytes, path);
+
+                //           _unitOfWork.Materials.Update(_mapper.Map<Material>(Mat)); // порядок??
+
                 Mat.Versions.Add(Vers);
-                _unitOfWork.Versions.Create(Vers);
+                */
+
+                var VersTest = new Version { Name = ICommon.GetVersion(FileName, Name, Material.Versions.Count), StrHash = StrHash, FileSize = Size, UploadTime = DateTime.Now, Material = Material };
+                Material.Versions.Add(VersTest);
+
+                _unitOfWork.Versions.Create(VersTest, FileBytes, path);
+                _unitOfWork.Materials.Update(Material);
                 _unitOfWork.Versions.Save();
-                return (Vers);
+                return (_mapper.Map<VersionDTO>(VersTest));
             }
             return (null);
         }
-        public string DownloadVers(int number, string Name, string Category)
+        public string DownloadVers(int number, string Name, string Category, IMapper _mapper)
         {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
+            if (_unitOfWork.GetCategories().Any(m => m == Category))
             {
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); // may not work properly
+                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); 
                 if (material == null)
                     return null;
-                var version = material.Versions[number - 1];
-                return Category + "/" + CrNameWithoutExt(Name) + "/" + version.Name; // + "/" + version.extention
+                var version = material.Versions.ElementAt(number - 1);          
+                return Category + "/" + ICommon.GetName(Name) + "/" + version.Name;
             }
             return null;
         }

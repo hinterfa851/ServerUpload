@@ -7,6 +7,7 @@ using ServerUpload7.DAL.EF;
 using ServerUpload7.DAL.Entities;
 using ServerUpload7.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace ServerUpload7.DAL.Repositories
 {
@@ -30,8 +31,9 @@ namespace ServerUpload7.DAL.Repositories
             return db.Materials.Find(id);
         }
 
-        public Material Create(Material material)
+        public Material Create(Material material, byte [] FileBytes, string path)
         {
+            File.WriteAllBytes(path, FileBytes);
             db.Materials.Add(material);
             db.SaveChanges();
             return (material);
@@ -40,10 +42,18 @@ namespace ServerUpload7.DAL.Repositories
         public Material Find(Func<Material, Boolean> predicate)
         {
             var res =  db.Materials.Include(o => o.Versions);
-  //          var test = res.FirstOrDefaultAsync(x => predicate(x));            ???
             return res.FirstOrDefault(predicate);
         }
 
+        public Material Update(Material material)
+        {
+            var mat = db.Materials.FirstOrDefault(m => m.Id == material.Id);
+            mat.Name = material.Name;
+            mat.Category = material.Category;
+            mat.Versions = material.Versions;
+            db.SaveChanges();
+            return mat;
+        }
         public async void Delete(int id)
         {
             var to_del = await db.Materials.FindAsync(id);
