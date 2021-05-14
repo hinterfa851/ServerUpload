@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.WEB.Resources;
-using ServerUpload7.BLL.ModelDTO;
-using Version = ServerUpload7.DAL.Entities.Version;
+﻿using AutoMapper;
+using ServerUpload7.Web.Dto;
+using DataVersion = ServerUpload7.DAL.Entities.Version;
+using DataMaterial = ServerUpload7.DAL.Entities.Material;
+using Material = ServerUpload7.BLL.BusinessModels.Material;
+using Version = ServerUpload7.BLL.BusinessModels.Version;
+
 
 namespace ServerUpload7.WEB.Mapping
 {
@@ -14,13 +12,13 @@ namespace ServerUpload7.WEB.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<MaterialDTO, MaterialView>()
-            .ForMember("Vers_num", opt => opt.MapFrom(src => src.Versions.Count));
-            CreateMap<VersionDTO, VersionView>();
-            CreateMap<Material, MaterialDTO>();
-            CreateMap<MaterialDTO, Material>();
-            CreateMap<Version, VersionDTO>();
-            CreateMap<VersionDTO, Version>();
+            CreateMap<Material, MaterialDto>()
+            .ForMember("NumberOfVersions", opt => opt.MapFrom(src => src.Versions.Count));
+            CreateMap<Version, VersionDto>();
+            CreateMap<DataMaterial, Material>();
+            CreateMap<Material, DataMaterial>();
+            CreateMap<Version, DataVersion>();
+            CreateMap<DataVersion, Version>();
         }
     }
 }

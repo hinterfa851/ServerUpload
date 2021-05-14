@@ -43,14 +43,14 @@ namespace ServerUpload7.DAL.Repositories
             }
         }
 
-        public IEnumerable<string> GetCategories()
+        public IEnumerable<int> GetCategories()
         {
-            List<string> result2 = new List<string>();
+            List<int> result = new List<int>();
             foreach (var name in db.Category)
             {
-                result2.Add(name.Name);
+                result.Add(name.Id);
             } 
-            return result2.AsEnumerable();
+            return result.AsEnumerable();
         }
 
         public void Save()

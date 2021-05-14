@@ -15,6 +15,6 @@ namespace ServerUpload7.DAL.Interfaces
         public IRepository<Material> Materials { get; }
         public IRepository<Version> Versions { get; }
 
-        public IEnumerable<string> GetCategories();
+        public IEnumerable<int> GetCategories();
     }
 }

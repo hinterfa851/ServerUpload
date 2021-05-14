@@ -1,36 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace ServerUpload7.BLL.Interfaces
 {
     public interface ICommon
     {
-        private static Regex regex1 = new Regex(@"^.*(?=\.)");
-        private static Regex regex2 = new Regex(@"[^.]*$");
+        private static readonly Regex Regex1 = new Regex(@"^.*(?=\.)");
+        private static readonly Regex Regex2 = new Regex(@"[^.]*$");
 
-        public static string GetVersion(string FileName, string MatName, int number)
+        public static string GetVersion(string fileName, string matName, int number)
         {
             string DirName;
 
-            if (!FileName.Contains('.'))
-                DirName = MatName + $"_v{number}";
+            if (!fileName.Contains('.'))
+                DirName = matName + $"_v{number}";
             else
-                DirName = regex1.Match(MatName).Value + $"_v{number}." + regex2.Match(FileName).Value;
+                DirName = Regex1.Match(matName).Value + $"_v{number}." + Regex2.Match(fileName).Value;
             return DirName;
         }
-        public static string GetName(string FileName)
+        public static string GetName(string fileName)
         {
-            string DirName;
-
-            if (!FileName.Contains('.'))
-                DirName = FileName;
-            else
-                DirName = regex1.Match(FileName).Value;
-            return DirName;
+            return !fileName.Contains('.') ? fileName : Regex1.Match(fileName).Value;
         }
 
 

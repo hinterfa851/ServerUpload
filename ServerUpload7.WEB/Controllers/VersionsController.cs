@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
-using ServerUpload7.WEB.Resources;
 using ServerUpload7.BLL.Interfaces;
-using Version = ServerUpload7.DAL.Entities.Version;
-using ServerUpload7.DAL.Entities;
 using System.IO;
 using AutoMapper;
 using System.Security.Cryptography;
+using ServerUpload7.Web.Dto;
 
 namespace ServerUpload7.WEB.Controllers
 {
@@ -32,7 +28,7 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  VersionView Version(IFormFile uploadedFile, string Name, string Category)
+        public  VersionDto Version(IFormFile uploadedFile, string Name, string Category)
         {
             
                 var MemStream = new MemoryStream();
@@ -45,7 +41,7 @@ namespace ServerUpload7.WEB.Controllers
                 if (path == null)
                     return null;
 
-                var version = _mapper.Map<VersionView>(_versionsService.CreateVersion(FileBytes, Name, Category, uploadedFile.Length, _mapper, path, StrHash, uploadedFile.FileName));
+                var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(FileBytes, Name, Category, uploadedFile.Length, _mapper, path, StrHash, uploadedFile.FileName));
 
             MemStream.Dispose();
             return version;
@@ -55,7 +51,7 @@ namespace ServerUpload7.WEB.Controllers
         [Route("")]
         public FileResult Version(string Name, string Category, int Num)
         {
-            var Result = _versionsService.DownloadVers(Num, Name, Category, _mapper);
+            var Result = _versionsService.DownloadVersion(Num, Name, Category, _mapper);
             if (Result == null)
                 return null;
             return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");

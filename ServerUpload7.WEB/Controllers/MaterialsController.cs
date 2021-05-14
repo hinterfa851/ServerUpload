@@ -1,21 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
-using ServerUpload7.WEB.Resources;
-using ServerUpload7.BLL.Services;
 using System.IO;
 using ServerUpload7.BLL.Interfaces;
 using AutoMapper;
-using ServerUpload7.DAL.Entities;
 using System.Security.Cryptography;
+using ServerUpload7.DAL.Entities;
+using ServerUpload7.Web.Dto;
 
 
 namespace ServerUpload7.WEB.Controllers
 {
+    public enum Categories : byte
+    {
+        App,
+        Presentation,
+        Other
+    }
+
     [Route("materials")]
     public class MaterialsController : Controller
     {
@@ -34,19 +40,19 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  MaterialView Material(IFormFile uploadedFile, string category)
-        {          
+        public  MaterialDto Material(IFormFile uploadedFile, Categories category)
+        {
             var MemStream = new MemoryStream();
             uploadedFile.CopyTo(MemStream);
             var FileBytes = MemStream.ToArray();
             var hash = MD5.Create().ComputeHash(FileBytes);
             string StrHash = Convert.ToBase64String(hash);
 
-            string path = _materialsService.GetPath(category, uploadedFile.FileName, 1, _mapper, StrHash);
+            string path = _materialsService.GetPath("App", uploadedFile.FileName, 1, _mapper, StrHash);
             if (path == null)
                return null;
 
-            var Result = _mapper.Map<MaterialView>(_materialsService.CreateMaterial(FileBytes, category, uploadedFile.FileName, uploadedFile.Length, _mapper, path, StrHash));
+            var Result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(FileBytes, "App", uploadedFile.FileName, uploadedFile.Length, _mapper, path, StrHash));
 
             MemStream.Dispose();
             return Result;
@@ -55,20 +61,20 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpGet]
         [Route("actual-version")]
-        public  FileResult ActualVersion(string Name, string Category)
+        public  FileResult ActualVersion(string name, Categories category)
         {
             
-            var Result =  _materialsService.DownloadActualVersion(Name, Category, _mapper);
+            var Result =  _materialsService.DownloadActualVersion(name, category, _mapper);
             if (Result == null)
                 return null;
-            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Name.Split("/").Last()}");
+            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
         }
 
         [HttpGet]
         [Route("info")]
-        public ActionResult<MaterialView> GetMaterialInfo(string Name, string Category)
+        public ActionResult<MaterialDto> GetMaterialInfo(string name, Categories category)
         {
-            var Result = _mapper.Map<MaterialView>(_materialsService.GetMaterialInfo(Name, Category, _mapper));
+            var Result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, category, _mapper));
             if (Result == null)    
                 return null;
             return Ok(Result);
@@ -76,9 +82,9 @@ namespace ServerUpload7.WEB.Controllers
 
         [HttpPut]
         [Route("new-category")]
-        public ActionResult NewCategory(string Name, string OldCategory, string NewCategory)
+        public ActionResult NewCategory(string name, Categories oldCategory, Categories newCategory)
         {
-            var Result = _materialsService.ChangeCategory(Name, OldCategory, NewCategory, _mapper);
+            var Result = _materialsService.ChangeCategory(name, oldCategory, newCategory, _mapper);
             if (Result == 0)
                 return null;
             return Ok();
@@ -86,9 +92,9 @@ namespace ServerUpload7.WEB.Controllers
 
         [HttpGet]
         [Route("info/category")]
-        public ActionResult<List<MaterialView>> Category(string Category)
+        public ActionResult<List<MaterialDto>> Category(string category)
         {
-            var Result = _mapper.Map<IEnumerable<MaterialView>>(_materialsService.FilterMat(Category, _mapper));
+            var Result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat(category, _mapper));
             if (Result == null)
                 return null;
             return Ok(Result);

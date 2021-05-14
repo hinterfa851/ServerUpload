@@ -1,15 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ServerUpload7.DAL.EF;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +10,6 @@ using ServerUpload7.DAL.Repositories;
 using ServerUpload7.DAL.Interfaces;
 using ServerUpload7.BLL.Services;
 using ServerUpload7.BLL.Interfaces;
-using AutoMapper;
 
 namespace ServerUpload7.WEB
 {

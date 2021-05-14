@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ServerUpload7.BLL.Interfaces;
-using ServerUpload7.DAL.Entities;
-using Version = ServerUpload7.DAL.Entities.Version;
-using System.IO;
 using ServerUpload7.DAL.Interfaces;
 using AutoMapper;
-using ServerUpload7.BLL.ModelDTO;
+using DataVersion = ServerUpload7.DAL.Entities.Version;
+using Version = ServerUpload7.BLL.BusinessModels.Version;
 
 namespace ServerUpload7.BLL.Services
 {
@@ -21,38 +16,38 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
-        public string GetPath(string category, string MatName, IMapper _mapper, string StrHash, string FileName)
+        public string GetPath(string category, string materialName, IMapper mapper, string hashString, string fileName)
         {
             if (_unitOfWork.GetCategories().Any(m => m == category))
             {
-                var Mat = _unitOfWork.Materials.Find(m => m.Name == MatName && m.Category == category);
-                if (Mat != null)            
+                var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == category);
+                if (material != null)            
                 {
-                    string DirName = ICommon.GetName(MatName);
-                    foreach (var v in Mat.Versions)
+                    string directoryName = ICommon.GetName(materialName);
+                    foreach (var v in material.Versions)
                     {
-                        var Vers = _mapper.Map<VersionDTO>(v);
-                        if (Vers.StrHash == StrHash)
+                        var version = mapper.Map<Version>(v);
+                        if (version.HashString == hashString)
                             return null;
                     }
-                    if (!FileName.Contains('.'))
-                        return "Files/" + category + "/" + DirName + "/" + FileName + $"_v{Mat.Versions.Count + 1}";
+                    if (!fileName.Contains('.'))
+                        return "Files/" + category + "/" + directoryName + "/" + fileName + $"_v{material.Versions.Count + 1}";
                     else
-                        return "Files/" + category + "/" + DirName + "/" + ICommon.GetVersion(FileName, MatName, Mat.Versions.Count + 1);
+                        return "Files/" + category + "/" + directoryName + "/" + ICommon.GetVersion(fileName, materialName, material.Versions.Count + 1);
                 }
             }
             return null;
         }
-        public VersionDTO CreateVersion(byte [] FileBytes, string Name, string Category, long Size, IMapper _mapper, string path, string StrHash, string FileName)
+        public Version CreateVersion(byte [] fileBytes, string name, string category, long size, IMapper mapper, string path, string strHash, string fileName)
         {
-            if (_unitOfWork.GetCategories().Any(m => m == Category))
+            if (_unitOfWork.GetCategories().Any(m => m == category))
             {
-                var Material = _unitOfWork.Materials.Find(u => u.Category == Category && u.Name == Name);
+                var Material = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == name);
                 if (Material == null)
                     return null;
                 /*
                 var Mat = _mapper.Map<MaterialDTO>(Material);
-                var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, Name, Mat.Versions.Count), StrHash = StrHash, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
+                var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, Name, Mat.Versions.Count), hashString = hashString, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
                 //         _unitOfWork.Versions.Create(_mapper.Map<Version>(Vers), FileBytes, path);
 
                 //           _unitOfWork.Materials.Update(_mapper.Map<Material>(Mat)); // порядок??
@@ -60,25 +55,25 @@ namespace ServerUpload7.BLL.Services
                 Mat.Versions.Add(Vers);
                 */
 
-                var VersTest = new Version { Name = ICommon.GetVersion(FileName, Name, Material.Versions.Count), StrHash = StrHash, FileSize = Size, UploadTime = DateTime.Now, Material = Material };
-                Material.Versions.Add(VersTest);
+                var version = new DataVersion { Name = ICommon.GetVersion(fileName, name, Material.Versions.Count), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
+                Material.Versions.Add(version);
 
-                _unitOfWork.Versions.Create(VersTest, FileBytes, path);
+                _unitOfWork.Versions.Create(version, fileBytes, path);
                 _unitOfWork.Materials.Update(Material);
                 _unitOfWork.Versions.Save();
-                return (_mapper.Map<VersionDTO>(VersTest));
+                return (mapper.Map<Version>(version));
             }
             return (null);
         }
-        public string DownloadVers(int number, string Name, string Category, IMapper _mapper)
+        public string DownloadVersion(int number, string name, string category, IMapper mapper)
         {
-            if (_unitOfWork.GetCategories().Any(m => m == Category))
+            if (_unitOfWork.GetCategories().Any(m => m == category))
             {
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); 
+                var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == category); 
                 if (material == null)
                     return null;
                 var version = material.Versions.ElementAt(number - 1);          
-                return Category + "/" + ICommon.GetName(Name) + "/" + version.Name;
+                return category + "/" + ICommon.GetName(name) + "/" + version.Name;
             }
             return null;
         }
