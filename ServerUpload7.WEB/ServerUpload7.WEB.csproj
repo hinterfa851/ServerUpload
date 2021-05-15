@@ -28,4 +28,6 @@
     <ProjectReference Include="..\ServerUpload7.DAL\ServerUpload7.DAL.csproj" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>

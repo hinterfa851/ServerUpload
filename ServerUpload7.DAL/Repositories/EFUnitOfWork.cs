@@ -18,6 +18,7 @@ namespace ServerUpload7.DAL.Repositories
         private ApplicationContext db;
         private MaterialsRepository materialRepository;
         private VersionsRepository versionRepository;
+        private FileManager fileManager;
 
         public EFUnitOfWork(DbContextOptions connectionString)
         {
@@ -43,14 +44,33 @@ namespace ServerUpload7.DAL.Repositories
             }
         }
 
-        public IEnumerable<int> GetCategories()
+        public FileManager FileManager
         {
-            List<int> result = new List<int>();
-            foreach (var name in db.Category)
+            get
             {
-                result.Add(name.Id);
-            } 
-            return result.AsEnumerable();
+                if (fileManager == null)
+                {
+                    fileManager = new FileManager();
+                }
+
+                return fileManager;
+            }
+        }
+
+        public List<Category> GetCategories()
+        {
+            //List<int> result = new List<int>();
+            //foreach (var name in db.Category)
+            //{
+            //    result.Add(name.Id);
+            //} 
+            //return result.AsEnumerable();
+            List<Category> result = new List<Category>();
+            foreach (var category in db.Category)
+            {
+                result.Add(category);
+            }
+            return result;
         }
 
         public void Save()

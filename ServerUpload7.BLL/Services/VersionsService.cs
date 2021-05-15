@@ -5,10 +5,12 @@ using ServerUpload7.DAL.Interfaces;
 using AutoMapper;
 using DataVersion = ServerUpload7.DAL.Entities.Version;
 using Version = ServerUpload7.BLL.BusinessModels.Version;
+using Category = ServerUpload7.BLL.BusinessModels.Category;
+
 
 namespace ServerUpload7.BLL.Services
 {
-    public class VersionsService : IVersionsService
+    public class VersionsService : ServiceBase, IVersionsService
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,14 +18,16 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
-        public string GetPath(string category, string materialName, IMapper mapper, string hashString, string fileName)
+        public string GetPath(int category, string materialName, IMapper mapper, string hashString, string fileName)
         {
-            if (_unitOfWork.GetCategories().Any(m => m == category))
+            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+
+            if (dbCategory != null)
             {
-                var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == category);
+                var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == dbCategory.Name);
                 if (material != null)            
                 {
-                    string directoryName = ICommon.GetName(materialName);
+                    string directoryName = GetName(materialName);
                     foreach (var v in material.Versions)
                     {
                         var version = mapper.Map<Version>(v);
@@ -33,16 +37,18 @@ namespace ServerUpload7.BLL.Services
                     if (!fileName.Contains('.'))
                         return "Files/" + category + "/" + directoryName + "/" + fileName + $"_v{material.Versions.Count + 1}";
                     else
-                        return "Files/" + category + "/" + directoryName + "/" + ICommon.GetVersion(fileName, materialName, material.Versions.Count + 1);
+                        return "Files/" + category + "/" + directoryName + "/" + GetVersion(fileName, materialName, material.Versions.Count + 1);
                 }
             }
             return null;
         }
-        public Version CreateVersion(byte [] fileBytes, string name, string category, long size, IMapper mapper, string path, string strHash, string fileName)
+        public Version CreateVersion(byte [] fileBytes, string name, int category, long size, IMapper mapper, string path, string strHash, string fileName)
         {
-            if (_unitOfWork.GetCategories().Any(m => m == category))
+            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+
+            if (dbCategory != null)
             {
-                var Material = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == name);
+                var Material = _unitOfWork.Materials.Find(u => u.Category == dbCategory.Name && u.Name == name);
                 if (Material == null)
                     return null;
                 /*
@@ -55,7 +61,7 @@ namespace ServerUpload7.BLL.Services
                 Mat.Versions.Add(Vers);
                 */
 
-                var version = new DataVersion { Name = ICommon.GetVersion(fileName, name, Material.Versions.Count), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
+                var version = new DataVersion { Name = GetVersion(fileName, name, Material.Versions.Count), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
                 Material.Versions.Add(version);
 
                 _unitOfWork.Versions.Create(version, fileBytes, path);
@@ -65,15 +71,17 @@ namespace ServerUpload7.BLL.Services
             }
             return (null);
         }
-        public string DownloadVersion(int number, string name, string category, IMapper mapper)
+        public string DownloadVersion(int number, string name, int category, IMapper mapper)
         {
-            if (_unitOfWork.GetCategories().Any(m => m == category))
+            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+
+            if (dbCategory != null)
             {
-                var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == category); 
+                var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == dbCategory.Name); 
                 if (material == null)
                     return null;
                 var version = material.Versions.ElementAt(number - 1);          
-                return category + "/" + ICommon.GetName(name) + "/" + version.Name;
+                return category + "/" + GetName(name) + "/" + version.Name;
             }
             return null;
         }

@@ -1,8 +1,14 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
-namespace ServerUpload7.BLL.Interfaces
+
+namespace ServerUpload7.BLL.Services
 {
-    public interface ICommon
+    public abstract class ServiceBase
     {
         private static readonly Regex Regex1 = new Regex(@"^.*(?=\.)");
         private static readonly Regex Regex2 = new Regex(@"[^.]*$");
@@ -21,7 +27,6 @@ namespace ServerUpload7.BLL.Interfaces
         {
             return !fileName.Contains('.') ? fileName : Regex1.Match(fileName).Value;
         }
-
 
     }
 }

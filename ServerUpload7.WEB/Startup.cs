@@ -17,7 +17,10 @@ namespace ServerUpload7.WEB
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder().AddJsonFile("webconfig.json").AddConfiguration(configuration);
+            Configuration = builder.Build();
+     //       Configuration = configuration;
+
         }
 
         public IConfiguration Configuration { get; }
@@ -29,12 +32,14 @@ namespace ServerUpload7.WEB
             services.AddScoped<IUnitOfWork, EFUnitOfWork>();
             services.AddTransient<IMaterialsService, MaterialsService>();
             services.AddTransient<IVersionsService, VersionsService>();
+            
             services.AddControllers().AddNewtonsoftJson(options =>
                  options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ServerUpload7.WEB", Version = "v1" });
             });
+            
      
             services.AddAutoMapper(typeof(Startup));
         }

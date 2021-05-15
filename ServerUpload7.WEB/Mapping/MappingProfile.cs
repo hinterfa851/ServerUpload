@@ -4,7 +4,8 @@ using DataVersion = ServerUpload7.DAL.Entities.Version;
 using DataMaterial = ServerUpload7.DAL.Entities.Material;
 using Material = ServerUpload7.BLL.BusinessModels.Material;
 using Version = ServerUpload7.BLL.BusinessModels.Version;
-
+using DataCategory = ServerUpload7.DAL.Entities.Category;
+using Category = ServerUpload7.BLL.BusinessModels.Category;
 
 namespace ServerUpload7.WEB.Mapping
 {
@@ -19,6 +20,7 @@ namespace ServerUpload7.WEB.Mapping
             CreateMap<Material, DataMaterial>();
             CreateMap<Version, DataVersion>();
             CreateMap<DataVersion, Version>();
+            CreateMap<Category, DataCategory>();
         }
     }
 }
