@@ -48,9 +48,9 @@ namespace ServerUpload7.WEB.Controllers
             var MemStream = new MemoryStream();
             uploadedFile.CopyTo(MemStream);
             var FileBytes = MemStream.ToArray();
-            var hash = MD5.Create().ComputeHash(FileBytes);
-            string StrHash = Convert.ToBase64String(hash);
-
+      //      var hash = MD5.Create().ComputeHash(FileBytes);
+      //      string StrHash = Convert.ToBase64String(hash);
+            string StrHash = _materialsService.GetHash(FileBytes);
             string path = _materialsService.GetPath((int) category, uploadedFile.FileName, 1, _mapper, StrHash);
             if (path == null)
                return null;

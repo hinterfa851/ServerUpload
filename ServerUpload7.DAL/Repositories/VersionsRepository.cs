@@ -32,10 +32,9 @@ namespace ServerUpload7.DAL.Repositories
             return db.Versions.Find(id);
         }
 
-        public Version Create(Version version, byte [] FileBytes, string path)
+        public Version Create(Version version)
         {
             db.Versions.Add(version);
-            File.WriteAllBytes(path, FileBytes);
             return version;
         }
         

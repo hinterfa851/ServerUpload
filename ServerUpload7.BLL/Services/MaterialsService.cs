@@ -49,14 +49,12 @@ namespace ServerUpload7.BLL.Services
             Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
             if (dbCategory != null)
             {
-     //           Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/Files/" + category + "/" + fileName);
-
                 var Material = new Material { Name = fileName, Category = dbCategory.Name };
                 var Version = new BusinessModels.Version { Name = GetVersion(fileName, fileName, 1), HashString = hashString, FileSize = size, UploadTime = DateTime.Now, Material = Material };
 
                 Material.Versions = new List<BusinessModels.Version> {Version};
                 _unitOfWork.FileManager.SaveFile(path, fileBytes);
-                _unitOfWork.Materials.Create(mapper.Map<DataMaterial>(Material), fileBytes, path);
+                _unitOfWork.Materials.Create(mapper.Map<DataMaterial>(Material));
                 return (Material);
             }
             return (null);

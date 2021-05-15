@@ -18,6 +18,16 @@ namespace ServerUpload7.BLL.Services
         {
             this._unitOfWork = unitOfWork;
         }
+
+        /*
+        public string GetHash(byte[] fileBytes)
+        {
+            string result;
+
+            result = _unitOfWork.FileManager.GetHash(fileBytes);
+            return result;
+        }
+        */
         public string GetPath(int category, string materialName, IMapper mapper, string hashString, string fileName)
         {
             Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
@@ -64,7 +74,8 @@ namespace ServerUpload7.BLL.Services
                 var version = new DataVersion { Name = GetVersion(fileName, name, Material.Versions.Count), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
                 Material.Versions.Add(version);
 
-                _unitOfWork.Versions.Create(version, fileBytes, path);
+                _unitOfWork.FileManager.SaveFile(path, fileBytes);
+                _unitOfWork.Versions.Create(version);
                 _unitOfWork.Materials.Update(Material);
                 _unitOfWork.Versions.Save();
                 return (mapper.Map<Version>(version));

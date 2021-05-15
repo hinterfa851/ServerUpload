@@ -31,9 +31,8 @@ namespace ServerUpload7.DAL.Repositories
             return db.Materials.Find(id);
         }
 
-        public Material Create(Material material, byte [] FileBytes, string path)
+        public Material Create(Material material)
         {
-            File.WriteAllBytes(path, FileBytes);
             db.Materials.Add(material);
             db.SaveChanges();
             return (material);

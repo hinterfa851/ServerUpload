@@ -12,5 +12,7 @@ namespace ServerUpload7.BLL.Interfaces
         public Material GetMaterialInfo(string name, int category, IMapper mapper);
         public int ChangeCategory(string name, int oldCategory, int newCategory, IMapper mapper);
         public IEnumerable<Material> FilterMat(int category, IMapper mapper);
+
+        public string GetHash(byte[] fileBytes);
     }
 }

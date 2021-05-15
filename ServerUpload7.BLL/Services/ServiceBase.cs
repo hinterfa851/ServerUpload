@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-
+using ServerUpload7.DAL.Interfaces;
 
 namespace ServerUpload7.BLL.Services
 {
@@ -12,7 +12,9 @@ namespace ServerUpload7.BLL.Services
     {
         private static readonly Regex Regex1 = new Regex(@"^.*(?=\.)");
         private static readonly Regex Regex2 = new Regex(@"[^.]*$");
+        private readonly IUnitOfWork _unitOfWork;
 
+        
         public static string GetVersion(string fileName, string matName, int number)
         {
             string DirName;
@@ -26,6 +28,12 @@ namespace ServerUpload7.BLL.Services
         public static string GetName(string fileName)
         {
             return !fileName.Contains('.') ? fileName : Regex1.Match(fileName).Value;
+        }
+
+        public string GetHash(byte[] fileBytes)
+        {
+            var result = _unitOfWork.FileManager.GetHash(fileBytes);
+            return result;
         }
 
     }
