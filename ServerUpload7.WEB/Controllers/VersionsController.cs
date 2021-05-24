@@ -1,15 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using ServerUpload7.BLL.Interfaces;
 using System.IO;
 using AutoMapper;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
-
-using ServerUpload7.BLL.BusinessModels;
 using ServerUpload7.Web.Dto;
 
 namespace ServerUpload7.WEB.Controllers
@@ -39,15 +35,11 @@ namespace ServerUpload7.WEB.Controllers
             uploadedFile.CopyTo(MemStream);
             var FileBytes = MemStream.ToArray();
             string StrHash  = _versionsService.GetHash(FileBytes);
-        //    var hash = MD5.Create().ComputeHash(FileBytes);
-         //   string StrHash = Convert.ToBase64String(hash);
-            
-            string path = _versionsService.GetPath((int) category, name, _mapper, StrHash, uploadedFile.FileName);
+            string path = _versionsService.GetPath((int) category, name, StrHash, uploadedFile.FileName);
             if (path == null)
                 return null;
 
-            var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(FileBytes, name, (int) category, uploadedFile.Length, _mapper, path, StrHash, uploadedFile.FileName));
-
+            var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(FileBytes, name, (int) category, uploadedFile.Length, path, StrHash, uploadedFile.FileName));
             MemStream.Dispose();
             return version;
         }
@@ -56,11 +48,11 @@ namespace ServerUpload7.WEB.Controllers
         [Route("")]
         public FileResult Version(string name, Categories category, int num)
         {
-            var Result = _versionsService.DownloadVersion(num, name, (int) category, _mapper);
+            var Result = _versionsService.DownloadVersion(num, name, (int) category);
             if (Result == null)
                 return null; 
-//            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
-            return PhysicalFile(_configuration["path"], System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
+    //        return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
+            return PhysicalFile(_configuration["FilePath"] + Result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
 
         }
     }

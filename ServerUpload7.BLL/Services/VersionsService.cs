@@ -12,25 +12,15 @@ namespace ServerUpload7.BLL.Services
 {
     public class VersionsService : ServiceBase, IVersionsService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public VersionsService(IUnitOfWork unitOfWork)
+        public VersionsService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
         {
-            this._unitOfWork = unitOfWork;
+            this._mapper = mapper;
         }
-
-        /*
-        public string GetHash(byte[] fileBytes)
+        public string GetPath(int category, string materialName, string hashString, string fileName)
         {
-            string result;
-
-            result = _unitOfWork.FileManager.GetHash(fileBytes);
-            return result;
-        }
-        */
-        public string GetPath(int category, string materialName, IMapper mapper, string hashString, string fileName)
-        {
-            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+            Category dbCategory = _mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category + 1));
 
             if (dbCategory != null)
             {
@@ -40,21 +30,21 @@ namespace ServerUpload7.BLL.Services
                     string directoryName = GetName(materialName);
                     foreach (var v in material.Versions)
                     {
-                        var version = mapper.Map<Version>(v);
+                        var version = _mapper.Map<Version>(v);
                         if (version.HashString == hashString)
                             return null;
                     }
                     if (!fileName.Contains('.'))
-                        return "Files/" + category + "/" + directoryName + "/" + fileName + $"_v{material.Versions.Count + 1}";
+                        return "Files/" + dbCategory.Name + "/" + directoryName + "/" + fileName + $"_v{material.Versions.Count + 1}";
                     else
-                        return "Files/" + category + "/" + directoryName + "/" + GetVersion(fileName, materialName, material.Versions.Count + 1);
+                        return "Files/" + dbCategory.Name + "/" + directoryName + "/" + GetVersion(fileName, materialName, material.Versions.Count + 1);
                 }
             }
             return null;
         }
-        public Version CreateVersion(byte [] fileBytes, string name, int category, long size, IMapper mapper, string path, string strHash, string fileName)
+        public Version CreateVersion(byte [] fileBytes, string name, int category, long size, string path, string strHash, string fileName)
         {
-            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+            Category dbCategory = _mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category + 1));
 
             if (dbCategory != null)
             {
@@ -71,20 +61,28 @@ namespace ServerUpload7.BLL.Services
                 Mat.Versions.Add(Vers);
                 */
 
-                var version = new DataVersion { Name = GetVersion(fileName, name, Material.Versions.Count), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
+                var version = new DataVersion { Name = GetVersion(fileName, name, Material.Versions.Count + 1), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = Material };
                 Material.Versions.Add(version);
 
-                _unitOfWork.FileManager.SaveFile(path, fileBytes);
+                try
+                {
+                    _unitOfWork.FileManager.SaveFile(path, fileBytes);
+
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
                 _unitOfWork.Versions.Create(version);
                 _unitOfWork.Materials.Update(Material);
                 _unitOfWork.Versions.Save();
-                return (mapper.Map<Version>(version));
+                return (_mapper.Map<Version>(version));
             }
             return (null);
         }
-        public string DownloadVersion(int number, string name, int category, IMapper mapper)
+        public string DownloadVersion(int number, string name, int category)
         {
-            Category dbCategory = mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category));
+            Category dbCategory = _mapper.Map<Category>(_unitOfWork.GetCategories().Find(m => m.Id == category + 1));
 
             if (dbCategory != null)
             {
@@ -92,7 +90,7 @@ namespace ServerUpload7.BLL.Services
                 if (material == null)
                     return null;
                 var version = material.Versions.ElementAt(number - 1);          
-                return category + "/" + GetName(name) + "/" + version.Name;
+                return dbCategory.Name + "/" + GetName(name) + "/" + version.Name;
             }
             return null;
         }

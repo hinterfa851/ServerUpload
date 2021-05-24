@@ -16,10 +16,6 @@ namespace ServerUpload7.Tests
         public void CrNameTest()
         {
             var mock = new Mock<IUnitOfWork>();
-            var TestingService = new MaterialsService(mock.Object);
-
-            var res = TestingService.CrName("test.pdf", 1);
-            Assert.Equal("test_v1.pdf", res);
         }
     }
 }

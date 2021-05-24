@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ServerUpload7.DAL.Interfaces;
 using ServerUpload7.DAL.Entities;
 using ServerUpload7.DAL.EF;
@@ -59,12 +56,6 @@ namespace ServerUpload7.DAL.Repositories
 
         public List<Category> GetCategories()
         {
-            //List<int> result = new List<int>();
-            //foreach (var name in db.Category)
-            //{
-            //    result.Add(name.Id);
-            //} 
-            //return result.AsEnumerable();
             List<Category> result = new List<Category>();
             foreach (var category in db.Category)
             {

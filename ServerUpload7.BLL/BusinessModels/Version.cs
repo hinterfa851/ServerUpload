@@ -11,6 +11,5 @@ namespace ServerUpload7.BLL.BusinessModels
         public long FileSize { get; set; }
         public int MaterialId { get; set; }
         public Material Material { get; set; }
-
     }
 }

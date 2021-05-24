@@ -10,8 +10,8 @@ using ServerUpload7.DAL.EF;
 namespace ServerUpload7.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20210404210037_fix Materials list_v3")]
-    partial class fixMaterialslist_v3
+    [Migration("20210519123346_fixed model")]
+    partial class fixedmodel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,21 @@ namespace ServerUpload7.DAL.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.4")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("ServerUpload7.DAL.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Category");
+                });
 
             modelBuilder.Entity("ServerUpload7.DAL.Entities.Material", b =>
                 {
@@ -55,6 +70,9 @@ namespace ServerUpload7.DAL.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StrHash")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UploadTime")
                         .HasColumnType("datetime2");
 
@@ -62,7 +80,7 @@ namespace ServerUpload7.DAL.Migrations
 
                     b.HasIndex("MaterialId");
 
-                    b.ToTable("Version");
+                    b.ToTable("Versions");
                 });
 
             modelBuilder.Entity("ServerUpload7.DAL.Entities.Version", b =>

@@ -5,10 +5,10 @@ namespace ServerUpload7.BLL.Interfaces
 {   
     public interface IVersionsService
     {
-        public Version CreateVersion(byte [] fileBytes, string name, int category, long size, IMapper mapper, string path, string strHash, string fileName);
-        public string DownloadVersion(int number, string name, int category, IMapper mapper);
+        public Version CreateVersion(byte [] fileBytes, string name, int category, long size, string path, string strHash, string fileName);
+        public string DownloadVersion(int number, string name, int category);
 
         public string GetHash(byte[] fileBytes);
-        public string GetPath(int category, string materialName, IMapper mapper, string hashString, string fileName);
+        public string GetPath(int category, string materialName, string hashString, string fileName);
     }
 }

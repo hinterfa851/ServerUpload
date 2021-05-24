@@ -3,10 +3,23 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ServerUpload7.DAL.Migrations
 {
-    public partial class fixMaterialslist_v3 : Migration
+    public partial class fixedmodel : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Materials",
                 columns: table => new
@@ -22,21 +35,22 @@ namespace ServerUpload7.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Version",
+                name: "Versions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UploadTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StrHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     MaterialId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Version", x => x.Id);
+                    table.PrimaryKey("PK_Versions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Version_Materials_MaterialId",
+                        name: "FK_Versions_Materials_MaterialId",
                         column: x => x.MaterialId,
                         principalTable: "Materials",
                         principalColumn: "Id",
@@ -44,15 +58,18 @@ namespace ServerUpload7.DAL.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Version_MaterialId",
-                table: "Version",
+                name: "IX_Versions_MaterialId",
+                table: "Versions",
                 column: "MaterialId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Version");
+                name: "Category");
+
+            migrationBuilder.DropTable(
+                name: "Versions");
 
             migrationBuilder.DropTable(
                 name: "Materials");

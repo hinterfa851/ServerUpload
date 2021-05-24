@@ -10,8 +10,8 @@ using ServerUpload7.DAL.EF;
 namespace ServerUpload7.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20210405010343_fix")]
-    partial class fix
+    [Migration("20210523215015_final")]
+    partial class final
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,6 +21,21 @@ namespace ServerUpload7.DAL.Migrations
                 .HasAnnotation("ProductVersion", "5.0.4")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("ServerUpload7.DAL.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Category");
+                });
+
             modelBuilder.Entity("ServerUpload7.DAL.Entities.Material", b =>
                 {
                     b.Property<int>("Id")
@@ -29,9 +44,11 @@ namespace ServerUpload7.DAL.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Category")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -53,6 +70,11 @@ namespace ServerUpload7.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StrHash")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UploadTime")

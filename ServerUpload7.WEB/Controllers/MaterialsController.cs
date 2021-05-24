@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using ServerUpload7.BLL.Interfaces;
 using AutoMapper;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
-using ServerUpload7.DAL.Entities;
 using ServerUpload7.Web.Dto;
 
 
@@ -48,15 +44,11 @@ namespace ServerUpload7.WEB.Controllers
             var MemStream = new MemoryStream();
             uploadedFile.CopyTo(MemStream);
             var FileBytes = MemStream.ToArray();
-      //      var hash = MD5.Create().ComputeHash(FileBytes);
-      //      string StrHash = Convert.ToBase64String(hash);
             string StrHash = _materialsService.GetHash(FileBytes);
-            string path = _materialsService.GetPath((int) category, uploadedFile.FileName, 1, _mapper, StrHash);
+            string path = _materialsService.GetPath((int) category, uploadedFile.FileName, 1, StrHash);
             if (path == null)
                return null;
-
-            var Result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(FileBytes, (int) category, uploadedFile.FileName, uploadedFile.Length, _mapper, path, StrHash));
-            
+            var Result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(FileBytes, (int) category, uploadedFile.FileName, uploadedFile.Length, path, StrHash));
             MemStream.Dispose();
             return Result;
         }
@@ -66,23 +58,20 @@ namespace ServerUpload7.WEB.Controllers
         [Route("actual-version")]
         public  FileResult ActualVersion(string name, Categories category)
         {
-            
-            var Result =  _materialsService.DownloadActualVersion(name, (int) category, _mapper);
+            var Result =  _materialsService.DownloadActualVersion(name, (int) category);
             if (Result == null)
                 return null;
             
-           // return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
-            return PhysicalFile(_configuration["path"] + Result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
-
+           return PhysicalFile(_configuration["FilePath"] + Result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
         }
 
         [HttpGet]
         [Route("info")]
         public ActionResult<MaterialDto> GetMaterialInfo(string name, Categories category)
         {
-            var Result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, (int) category, _mapper));
+            var Result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, (int) category));
             if (Result == null)    
-                return null;
+                return BadRequest();
             return Ok(Result);
         }
 
@@ -90,9 +79,9 @@ namespace ServerUpload7.WEB.Controllers
         [Route("new-category")]
         public ActionResult NewCategory(string name, Categories oldCategory, Categories newCategory)
         {
-            var Result = _materialsService.ChangeCategory(name, (int) oldCategory, (int) newCategory, _mapper);
+            var Result = _materialsService.ChangeCategory(name, (int) oldCategory, (int) newCategory);
             if (Result == 0)
-                return null;
+                return BadRequest();
             return Ok();
         }
 
@@ -100,9 +89,9 @@ namespace ServerUpload7.WEB.Controllers
         [Route("info/category")]
         public ActionResult<List<MaterialDto>> Category(Categories category)
         {
-            var Result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat((int) category, _mapper));
+            var Result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat((int) category));
             if (Result == null)
-                return null;
+                return BadRequest();
             return Ok(Result);
         }
     }

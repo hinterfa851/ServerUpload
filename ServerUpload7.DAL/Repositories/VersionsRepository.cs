@@ -24,7 +24,8 @@ namespace ServerUpload7.DAL.Repositories
         public IEnumerable<Version> GetAll(Func<Version, Boolean> predicate)
         {
             var ff = db.Versions.Include(o => o.Material);
-            return ff.Where(predicate);
+            var test = ff.Where(predicate);
+            return ff;
         }
 
         public Version Get(int id)

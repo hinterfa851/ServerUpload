@@ -18,9 +18,12 @@ namespace ServerUpload7.WEB.Mapping
             CreateMap<Version, VersionDto>();
             CreateMap<DataMaterial, Material>();
             CreateMap<Material, DataMaterial>();
-            CreateMap<Version, DataVersion>();
-            CreateMap<DataVersion, Version>();
+            CreateMap<Version, DataVersion>()
+                .ForMember("StrHash", opt => opt.MapFrom(src => src.HashString));
+            CreateMap<DataVersion, Version>()
+                .ForMember("HashString", opt => opt.MapFrom(src => src.StrHash));
             CreateMap<Category, DataCategory>();
+            CreateMap<DataCategory, Category>();
         }
     }
 }
