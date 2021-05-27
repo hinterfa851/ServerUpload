@@ -22,8 +22,7 @@ namespace ServerUpload7.DAL.Repositories
 
         public IEnumerable<Material> GetAll(Func<Material, Boolean> predicate)
         {
-            var test = db.Materials.Include(o => o.Versions);
-            return test.Where(predicate);
+            return db.Materials.Include(o => o.Versions).Where(predicate);
         }
 
         public Material Get(int id)
@@ -40,24 +39,23 @@ namespace ServerUpload7.DAL.Repositories
      
         public Material Find(Func<Material, Boolean> predicate)
         {
-            var res =  db.Materials.Include(o => o.Versions);
-            return res.FirstOrDefault(predicate);
+            return db.Materials.Include(o => o.Versions).FirstOrDefault(predicate);
         }
 
         public Material Update(Material material)
         {
-            var mat = db.Materials.FirstOrDefault(m => m.Id == material.Id);
-            mat.Name = material.Name;
-            mat.Category = material.Category;
-            mat.Versions = material.Versions;
+            var dbEntity = db.Materials.FirstOrDefault(m => m.Id == material.Id);
+            dbEntity.Name = material.Name;
+            dbEntity.Category = material.Category;
+            dbEntity.Versions = material.Versions;
             db.SaveChanges();
-            return mat;
+            return dbEntity;
         }
         public async void Delete(int id)
         {
-            var to_del = await db.Materials.FindAsync(id);
-            if (to_del != null)
-                db.Materials.Remove(to_del);
+            var dbEntity = await db.Materials.FindAsync(id);
+            if (dbEntity != null)
+                db.Materials.Remove(dbEntity);
         }
 
         public void Save()

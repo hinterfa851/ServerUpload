@@ -15,7 +15,6 @@ namespace ServerUpload7.DAL.Interfaces
         public IRepository<Material> Materials { get; }
         public IRepository<Version> Versions { get; }
 
-        public FileManager FileManager { get; }
-        public List<Category> GetCategories();
+        public IFileManager FileManager { get; }
     }
 }

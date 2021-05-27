@@ -14,8 +14,6 @@ namespace ServerUpload7.DAL.EF
         public DbSet<Material> Materials { get; set; }
         public DbSet<Version> Versions { get; set; }
 
-        public DbSet<Category> Category { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Material>()

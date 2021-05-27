@@ -29,31 +29,24 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  VersionDto Version(IFormFile uploadedFile, string name, Categories category)
+        public  VersionDto Version(IFormFile uploadedFile, string name, byte category)
         {
-            var MemStream = new MemoryStream();
-            uploadedFile.CopyTo(MemStream);
-            var FileBytes = MemStream.ToArray();
-            string StrHash  = _versionsService.GetHash(FileBytes);
-            string path = _versionsService.GetPath((int) category, name, StrHash, uploadedFile.FileName);
-            if (path == null)
-                return null;
-
-            var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(FileBytes, name, (int) category, uploadedFile.Length, path, StrHash, uploadedFile.FileName));
-            MemStream.Dispose();
+            var memStream = new MemoryStream();
+            uploadedFile.CopyTo(memStream);
+            var fileBytes = memStream.ToArray();
+            string strHash  = _versionsService.GetHash(fileBytes);
+            string path = _versionsService.GetPath(category, name, strHash, uploadedFile.FileName);
+            var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(fileBytes, name, category, uploadedFile.Length, path, strHash, uploadedFile.FileName));
+            memStream.Dispose();
             return version;
         }
         
         [HttpGet]
         [Route("")]
-        public FileResult Version(string name, Categories category, int num)
+        public FileResult Version(string name, byte category, int num)
         {
-            var Result = _versionsService.DownloadVersion(num, name, (int) category);
-            if (Result == null)
-                return null; 
-    //        return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
-            return PhysicalFile(_configuration["FilePath"] + Result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{Result.Split("/").Last()}");
-
+            var result = _versionsService.DownloadVersion(num, name, category);
+            return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{result.Split("/").Last()}");
         }
     }
 }

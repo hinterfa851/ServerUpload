@@ -1,5 +1,9 @@
+using System;
 using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +55,25 @@ namespace ServerUpload7.WEB
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ServerUpload7.WEB v1"));
             }
+
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                ExceptionHandler = c =>
+                {
+                    var exception = c.Features.Get<IExceptionHandlerFeature>();
+                    var statusCode = exception.Error.GetType().Name switch
+                    {
+                        "CategoryException" => HttpStatusCode.BadRequest,
+                        "MaterialExistException" => HttpStatusCode.BadRequest,
+                        "MaterialNotExistException" => HttpStatusCode.NotFound,
+                        "VersionExistException" => HttpStatusCode.BadRequest,
+                        _ => HttpStatusCode.ServiceUnavailable
+                    };
+                    c.Response.StatusCode = (int)statusCode;
+
+                    return Task.CompletedTask;
+                }
+            });
 
             app.UseHttpsRedirection();
 

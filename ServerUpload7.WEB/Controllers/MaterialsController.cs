@@ -12,12 +12,6 @@ using ServerUpload7.Web.Dto;
 
 namespace ServerUpload7.WEB.Controllers
 {
-    public enum Categories : byte
-    {
-        App,
-        Presentation,
-        Other
-    }
 
     [Route("materials")]
     public class MaterialsController : Controller
@@ -39,60 +33,49 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  MaterialDto Material(IFormFile uploadedFile, Categories category)
+        public  MaterialDto Material(IFormFile uploadedFile, byte category)
         {
-            var MemStream = new MemoryStream();
-            uploadedFile.CopyTo(MemStream);
-            var FileBytes = MemStream.ToArray();
-            string StrHash = _materialsService.GetHash(FileBytes);
-            string path = _materialsService.GetPath((int) category, uploadedFile.FileName, 1, StrHash);
-            if (path == null)
-               return null;
-            var Result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(FileBytes, (int) category, uploadedFile.FileName, uploadedFile.Length, path, StrHash));
-            MemStream.Dispose();
-            return Result;
+            var memStream = new MemoryStream();
+            uploadedFile.CopyTo(memStream);
+            var fileBytes = memStream.ToArray();
+            string strHash = _materialsService.GetHash(fileBytes);
+            string path = _materialsService.GetPath(category, uploadedFile.FileName, 1, strHash);
+            var result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(fileBytes, category, uploadedFile.FileName, uploadedFile.Length, path, strHash));
+            memStream.Dispose();
+            return result;
         }
             
         
         [HttpGet]
         [Route("actual-version")]
-        public  FileResult ActualVersion(string name, Categories category)
-        {
-            var Result =  _materialsService.DownloadActualVersion(name, (int) category);
-            if (Result == null)
-                return null;
-            
-           return PhysicalFile(_configuration["FilePath"] + Result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
+        public  FileResult ActualVersion(string name, byte category)
+        { 
+            var result =  _materialsService.DownloadActualVersion(name, category);
+            return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
         }
 
         [HttpGet]
         [Route("info")]
-        public ActionResult<MaterialDto> GetMaterialInfo(string name, Categories category)
+        public ActionResult<MaterialDto> GetMaterialInfo(string name, byte category)
         {
-            var Result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, (int) category));
-            if (Result == null)    
-                return BadRequest();
-            return Ok(Result);
+            var result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, category));
+            return Ok(result);
         }
 
         [HttpPut]
         [Route("new-category")]
-        public ActionResult NewCategory(string name, Categories oldCategory, Categories newCategory)
+        public ActionResult<MaterialDto> NewCategory(string name, byte oldCategory, byte newCategory)
         {
-            var Result = _materialsService.ChangeCategory(name, (int) oldCategory, (int) newCategory);
-            if (Result == 0)
-                return BadRequest();
-            return Ok();
+            var result = _mapper.Map<MaterialDto>(_materialsService.ChangeCategory(name, oldCategory, newCategory));
+            return Ok(result);
         }
 
         [HttpGet]
         [Route("info/category")]
-        public ActionResult<List<MaterialDto>> Category(Categories category)
+        public ActionResult<List<MaterialDto>> Category(byte category)
         {
-            var Result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat((int) category));
-            if (Result == null)
-                return BadRequest();
-            return Ok(Result);
+            var result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat(category));
+            return Ok(result);
         }
     }
 }

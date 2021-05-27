@@ -5,10 +5,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ServerUpload7.DAL.Interfaces;
 
 namespace ServerUpload7.DAL.Repositories
 {
-    public class FileManager
+    public class FileManager : IFileManager
     {
         public void SaveFile(string path, byte[] fileBytes)
         {
@@ -21,6 +22,11 @@ namespace ServerUpload7.DAL.Repositories
             var hash = md5.ComputeHash(fileBytes);
             md5.Dispose();
             return Convert.ToBase64String(hash);
+        }
+
+        public void CreateDirectory(string path)
+        {
+            Directory.CreateDirectory(path);
         }
     }
 }

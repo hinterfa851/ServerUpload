@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using ServerUpload7.DAL.Interfaces;
 using ServerUpload7.DAL.Entities;
 using ServerUpload7.DAL.EF;
@@ -41,7 +40,7 @@ namespace ServerUpload7.DAL.Repositories
             }
         }
 
-        public FileManager FileManager
+        public IFileManager FileManager
         {
             get
             {
@@ -52,16 +51,6 @@ namespace ServerUpload7.DAL.Repositories
 
                 return fileManager;
             }
-        }
-
-        public List<Category> GetCategories()
-        {
-            List<Category> result = new List<Category>();
-            foreach (var category in db.Category)
-            {
-                result.Add(category);
-            }
-            return result;
         }
 
         public void Save()
