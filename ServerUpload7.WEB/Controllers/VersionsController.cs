@@ -7,6 +7,7 @@ using System.IO;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using ServerUpload7.Web.Dto;
+using ServerUpload7.BLL.Enums;
 
 namespace ServerUpload7.WEB.Controllers
 {
@@ -29,7 +30,7 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  VersionDto Version(IFormFile uploadedFile, string name, byte category)
+        public  VersionDto Version(IFormFile uploadedFile, string name, Categories category)
         {
             var memStream = new MemoryStream();
             uploadedFile.CopyTo(memStream);
@@ -43,7 +44,7 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpGet]
         [Route("")]
-        public FileResult Version(string name, byte category, int num)
+        public FileResult Version(string name, Categories category, int num)
         {
             var result = _versionsService.DownloadVersion(num, name, category);
             return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{result.Split("/").Last()}");

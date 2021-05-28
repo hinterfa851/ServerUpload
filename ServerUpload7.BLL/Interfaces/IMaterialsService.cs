@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using ServerUpload7.BLL.BusinessModels;
+using ServerUpload7.BLL.Enums;
 
 namespace ServerUpload7.BLL.Interfaces
 {
     public interface IMaterialsService
     {
-        public Material CreateMaterial(byte[] fileBytes, byte category, string fileName, long size, string path, string hashString);
-        public string GetPath(byte category, string fileName, int number, string hashString);
-        public string DownloadActualVersion(string name, byte category);
-        public Material GetMaterialInfo(string name, byte category);
-        public Material ChangeCategory(string name, byte oldCategory, byte newCategory);
-        public IEnumerable<Material> FilterMat(byte category);
+        public Material CreateMaterial(byte[] fileBytes, Categories category, string fileName, long size, string path, string hashString);
+        public string GetPath(Categories category, string fileName, int number, string hashString);
+        public string DownloadActualVersion(string name, Categories category);
+        public Material GetMaterialInfo(string name, Categories category);
+        public Material ChangeCategory(string name, Categories oldCategory, Categories newCategory);
+        public IEnumerable<Material> FilterMat(Categories category);
         public string GetHash(byte[] fileBytes);
     }
 }

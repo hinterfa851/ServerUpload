@@ -8,7 +8,7 @@ using ServerUpload7.BLL.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using ServerUpload7.Web.Dto;
-
+using ServerUpload7.BLL.Enums;
 
 namespace ServerUpload7.WEB.Controllers
 {
@@ -33,7 +33,7 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpPost]
         [Route("")]
-        public  MaterialDto Material(IFormFile uploadedFile, byte category)
+        public  MaterialDto Material(IFormFile uploadedFile, Categories category)
         {
             var memStream = new MemoryStream();
             uploadedFile.CopyTo(memStream);
@@ -48,7 +48,7 @@ namespace ServerUpload7.WEB.Controllers
         
         [HttpGet]
         [Route("actual-version")]
-        public  FileResult ActualVersion(string name, byte category)
+        public  FileResult ActualVersion(string name, Categories category)
         { 
             var result =  _materialsService.DownloadActualVersion(name, category);
             return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
@@ -56,7 +56,7 @@ namespace ServerUpload7.WEB.Controllers
 
         [HttpGet]
         [Route("info")]
-        public ActionResult<MaterialDto> GetMaterialInfo(string name, byte category)
+        public ActionResult<MaterialDto> GetMaterialInfo(string name, Categories category)
         {
             var result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, category));
             return Ok(result);
@@ -64,7 +64,7 @@ namespace ServerUpload7.WEB.Controllers
 
         [HttpPut]
         [Route("new-category")]
-        public ActionResult<MaterialDto> NewCategory(string name, byte oldCategory, byte newCategory)
+        public ActionResult<MaterialDto> NewCategory(string name, Categories oldCategory, Categories newCategory)
         {
             var result = _mapper.Map<MaterialDto>(_materialsService.ChangeCategory(name, oldCategory, newCategory));
             return Ok(result);
@@ -72,7 +72,7 @@ namespace ServerUpload7.WEB.Controllers
 
         [HttpGet]
         [Route("info/category")]
-        public ActionResult<List<MaterialDto>> Category(byte category)
+        public ActionResult<List<MaterialDto>> Category(Categories category)
         {
             var result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat(category));
             return Ok(result);

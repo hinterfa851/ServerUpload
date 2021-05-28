@@ -19,11 +19,11 @@ namespace ServerUpload7.BLL.Services
         {
             this._mapper = mapper;
         }
-        public string GetPath(byte category, string materialName, string hashString, string fileName)
+        public string GetPath(Categories category, string materialName, string hashString, string fileName)
         {
             if (!Enum.IsDefined(typeof(Categories), category))
                 throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
-            var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == category);
+            var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == (int) category);
             if (material == null)
                 throw new MaterialNotExistException("Adding new version to unexisted material, try to create material first");
             string directoryName = GetName(materialName);
@@ -39,9 +39,9 @@ namespace ServerUpload7.BLL.Services
                 return "Files/"  + directoryName + "/" + GetVersion(fileName, materialName, material.Versions.Count + 1);
 
         }
-        public Version CreateVersion(byte [] fileBytes, string name, byte category, long size, string path, string strHash, string fileName)
+        public Version CreateVersion(byte [] fileBytes, string name, Categories category, long size, string path, string strHash, string fileName)
         {
-            var material = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == name);
+            var material = _unitOfWork.Materials.Find(u => u.Category == (int) category && u.Name == name);
             /*
             var Mat = _mapper.Map<MaterialDTO>(Material);
             var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, Name, Mat.Versions.Count), hashString = hashString, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
@@ -60,11 +60,11 @@ namespace ServerUpload7.BLL.Services
             return (_mapper.Map<Version>(version));
                 
         }
-        public string DownloadVersion(int number, string name, byte category)
+        public string DownloadVersion(int number, string name, Categories category)
         {
             if (!Enum.IsDefined(typeof(Categories), category))
                 throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
-            var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == category); 
+            var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == (int) category); 
             if (material == null)
                 throw new MaterialNotExistException("Downloading version of unexisted material, try to create material first");
             var version = material.Versions.ElementAt(number - 1);          
