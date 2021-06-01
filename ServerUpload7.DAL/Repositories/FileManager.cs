@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.Interfaces;
+using ServerUpload.DAL.Interfaces;
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
     public class FileManager : IFileManager
     {

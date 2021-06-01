@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServerUpload7.BLL.BusinessModels
+namespace ServerUpload.BLL.BusinessModels
 {
     public class Version
     {

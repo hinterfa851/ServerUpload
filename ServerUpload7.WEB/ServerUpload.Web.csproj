@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServerUpload7.BLL\ServerUpload7.BLL.csproj" />
-    <ProjectReference Include="..\ServerUpload7.DAL\ServerUpload7.DAL.csproj" />
+    <ProjectReference Include="..\ServerUpload7.BLL\ServerUpload.BLL.csproj" />
+    <ProjectReference Include="..\ServerUpload7.DAL\ServerUpload.DAL.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

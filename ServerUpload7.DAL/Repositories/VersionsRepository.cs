@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServerUpload7.DAL.EF;
-using ServerUpload7.DAL.Interfaces;
-using Version = ServerUpload7.DAL.Entities.Version;
 using Microsoft.EntityFrameworkCore;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Interfaces;
+using Version = ServerUpload.DAL.Entities.Version;
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
        public class VersionsRepository : IRepository<Version>
     {

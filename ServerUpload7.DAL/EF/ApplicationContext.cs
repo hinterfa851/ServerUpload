@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ServerUpload7.DAL.Entities;
-using Version = ServerUpload7.DAL.Entities.Version;
+﻿using Microsoft.EntityFrameworkCore;
+using ServerUpload.DAL.Entities;
+using Version = ServerUpload.DAL.Entities.Version;
 
-namespace ServerUpload7.DAL.EF
+namespace ServerUpload.DAL.EF
 {
     public class ApplicationContext : DbContext
     {

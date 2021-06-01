@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ServerUpload7.BLL.BusinessModels
+namespace ServerUpload.BLL.BusinessModels
 {
     public class Material
     {

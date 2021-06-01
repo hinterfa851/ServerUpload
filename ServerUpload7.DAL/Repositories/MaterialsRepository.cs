@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.EF;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Entities;
+using ServerUpload.DAL.Interfaces;
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
     public class MaterialsRepository : IRepository<Material>
     {

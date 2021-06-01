@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServerUpload7.BLL.Exceptions
+namespace ServerUpload.BLL.Exceptions
 {
     public class MaterialExistException : Exception
     {

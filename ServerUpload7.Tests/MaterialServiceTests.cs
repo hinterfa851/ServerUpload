@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.BLL.Services;
-using ServerUpload7.DAL.Interfaces;
+﻿using Moq;
+using ServerUpload.DAL.Interfaces;
 using Xunit;
-using Moq;
 
-namespace ServerUpload7.Tests
+namespace ServerUpload.Tests
 {
     public class MaterialServiceTests
     {

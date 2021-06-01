@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServerUpload7.DAL.Interfaces;
-using System.IO;
-using ServerUpload7.BLL.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using ServerUpload7.BLL.Enums;
-using ServerUpload7.BLL.Exceptions;
-using DataVersion = ServerUpload7.DAL.Entities.Version;
-using DataMaterial = ServerUpload7.DAL.Entities.Material;
-using Material = ServerUpload7.BLL.BusinessModels.Material;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Exceptions;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.DAL.Interfaces;
+using DataMaterial = ServerUpload.DAL.Entities.Material;
+using Material = ServerUpload.BLL.BusinessModels.Material;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.BLL.Services
+namespace ServerUpload.BLL.Services
 {
     public class MaterialsService : ServiceBase, IMaterialsService
     {
@@ -32,7 +31,7 @@ namespace ServerUpload7.BLL.Services
                 throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
             foreach (var version in _unitOfWork.Versions.GetAll(x => x.StrHash != null))
             {
-                var mappedVersion = _mapper.Map<BusinessModels.Version>(version);
+                var mappedVersion = _mapper.Map<Version>(version);
                 if (mappedVersion.HashString == hashString)
                     throw new VersionExistException("This version of material is already created, try to change it and upload again");
             }
@@ -48,8 +47,8 @@ namespace ServerUpload7.BLL.Services
         public Material CreateMaterial(byte [] fileBytes, Categories category, string fileName, long size, string path, string hashString)
         {
             var material = new Material { Name = fileName, Category = (int) category };
-            var version = new BusinessModels.Version { Name = GetVersion(fileName, fileName, 1), HashString = hashString, FileSize = size, UploadTime = DateTime.Now, Material = material };
-            material.Versions = new List<BusinessModels.Version> {version};
+            var version = new Version { Name = GetVersion(fileName, fileName, 1), HashString = hashString, FileSize = size, UploadTime = DateTime.Now, Material = material };
+            material.Versions = new List<Version> {version};
             _unitOfWork.FileManager.SaveFile(path, fileBytes);
             _unitOfWork.Materials.Create(_mapper.Map<DataMaterial>(material));
             return (material);
@@ -87,7 +86,7 @@ namespace ServerUpload7.BLL.Services
             if (material2 != null)
                 throw new MaterialExistException("This material name is already exist in new category");
             material.Category = (int) newCategory;
-            var updatedMaterial = _mapper.Map<Material>(_unitOfWork.Materials.Update(_mapper.Map<DAL.Entities.Material>(material)));
+            var updatedMaterial = _mapper.Map<Material>(_unitOfWork.Materials.Update(_mapper.Map<DataMaterial>(material)));
             return updatedMaterial;
         }
 

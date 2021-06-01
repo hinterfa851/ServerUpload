@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServerUpload7.DAL\ServerUpload7.DAL.csproj" />
+    <ProjectReference Include="..\ServerUpload7.DAL\ServerUpload.DAL.csproj" />
   </ItemGroup>
 
   <ItemGroup>

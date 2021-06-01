@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ServerUpload7.BLL.BusinessModels;
-using ServerUpload7.BLL.Enums;
+using ServerUpload.BLL.BusinessModels;
+using ServerUpload.BLL.Enums;
 
-namespace ServerUpload7.BLL.Interfaces
+namespace ServerUpload.BLL.Interfaces
 {
     public interface IMaterialsService
     {

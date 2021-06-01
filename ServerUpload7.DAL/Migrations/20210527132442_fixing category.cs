@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ServerUpload7.DAL.Migrations
+namespace ServerUpload.DAL.Migrations
 {
     public partial class fixingcategory : Migration
     {

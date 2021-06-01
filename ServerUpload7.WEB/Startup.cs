@@ -1,22 +1,21 @@
-using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using ServerUpload7.DAL.EF;
-using Microsoft.EntityFrameworkCore;
-using ServerUpload7.DAL.Repositories;
-using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.BLL.Services;
-using ServerUpload7.BLL.Interfaces;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.BLL.Services;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Interfaces;
+using ServerUpload.DAL.Repositories;
 
-namespace ServerUpload7.WEB
+namespace ServerUpload.Web
 {
     public class Startup
     {

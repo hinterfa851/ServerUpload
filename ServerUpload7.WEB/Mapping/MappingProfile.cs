@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
-using ServerUpload7.Web.Dto;
-using DataVersion = ServerUpload7.DAL.Entities.Version;
-using DataMaterial = ServerUpload7.DAL.Entities.Material;
-using Material = ServerUpload7.BLL.BusinessModels.Material;
-using Version = ServerUpload7.BLL.BusinessModels.Version;
+using ServerUpload.Web.Dto;
+using DataVersion = ServerUpload.DAL.Entities.Version;
+using DataMaterial = ServerUpload.DAL.Entities.Material;
+using Material = ServerUpload.BLL.BusinessModels.Material;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.WEB.Mapping
+namespace ServerUpload.Web.Mapping
 {
     public class MappingProfile : Profile
     {

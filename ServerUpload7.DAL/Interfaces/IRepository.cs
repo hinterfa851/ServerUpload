@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServerUpload7.DAL.Interfaces
+namespace ServerUpload.DAL.Interfaces
 {
     public interface IRepository<T> where T : class
     {

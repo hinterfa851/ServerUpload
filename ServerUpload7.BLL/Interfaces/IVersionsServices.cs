@@ -1,7 +1,7 @@
-﻿using ServerUpload7.BLL.Enums;
-using Version = ServerUpload7.BLL.BusinessModels.Version;
+﻿using ServerUpload.BLL.Enums;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.BLL.Interfaces
+namespace ServerUpload.BLL.Interfaces
 {   
     public interface IVersionsService
     {

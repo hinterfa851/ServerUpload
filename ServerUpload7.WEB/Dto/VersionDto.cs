@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServerUpload7.Web.Dto
+namespace ServerUpload.Web.Dto
 {
     public class VersionDto
     {

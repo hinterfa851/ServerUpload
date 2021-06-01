@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
-using ServerUpload7.DAL.Interfaces;
+using ServerUpload.DAL.Interfaces;
 
-namespace ServerUpload7.BLL.Services
+namespace ServerUpload.BLL.Services
 {
     public abstract class ServiceBase
     {

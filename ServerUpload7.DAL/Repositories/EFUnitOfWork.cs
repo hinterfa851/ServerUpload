@@ -1,12 +1,12 @@
 ﻿using System;
-using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.DAL.EF;
 using Microsoft.EntityFrameworkCore;
-using Version = ServerUpload7.DAL.Entities.Version;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Entities;
+using ServerUpload.DAL.Interfaces;
+using Version = ServerUpload.DAL.Entities.Version;
 
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
     public class EFUnitOfWork : IUnitOfWork
     {

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
-using ServerUpload7.BLL.Interfaces;
-using ServerUpload7.DAL.Interfaces;
 using AutoMapper;
-using ServerUpload7.BLL.Enums;
-using ServerUpload7.BLL.Exceptions;
-using DataVersion = ServerUpload7.DAL.Entities.Version;
-using Version = ServerUpload7.BLL.BusinessModels.Version;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Exceptions;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.DAL.Interfaces;
+using DataVersion = ServerUpload.DAL.Entities.Version;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
 
-namespace ServerUpload7.BLL.Services
+namespace ServerUpload.BLL.Services
 {
     public class VersionsService : ServiceBase, IVersionsService
     {

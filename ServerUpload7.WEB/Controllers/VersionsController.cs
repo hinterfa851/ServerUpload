@@ -1,15 +1,15 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-using ServerUpload7.BLL.Interfaces;
-using System.IO;
+﻿using System.IO;
+using System.Linq;
 using AutoMapper;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using ServerUpload7.Web.Dto;
-using ServerUpload7.BLL.Enums;
+using ServerUpload.Web.Dto;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Interfaces;
 
-namespace ServerUpload7.WEB.Controllers
+namespace ServerUpload.Web.Controllers
 {
     [Route("version")]
     public class VersionsController : Controller

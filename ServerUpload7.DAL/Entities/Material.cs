@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace ServerUpload7.DAL.Entities
+namespace ServerUpload.DAL.Entities
 {
     public class Material
     {
