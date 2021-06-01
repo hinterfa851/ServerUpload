@@ -1,152 +1,102 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Entities;
-using System.IO;
-using Version = ServerUpload7.DAL.Entities.Version;
-using ServerUpload7.DAL.Services;
+using AutoMapper;
+using Microsoft.Extensions.Configuration;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Exceptions;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.DAL.Interfaces;
+using DataMaterial = ServerUpload.DAL.Entities.Material;
+using Material = ServerUpload.BLL.BusinessModels.Material;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.BLL.Services
+namespace ServerUpload.BLL.Services
 {
-    public class MaterialsService : IMaterialsService
+    public class MaterialsService : ServiceBase, IMaterialsService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+  
 
-        public MaterialsService(IUnitOfWork unitOfWork)
+        public MaterialsService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper) : base(unitOfWork)
         {
-            this._unitOfWork = unitOfWork;
-        }
-        public string CrName(string Input, int Num_v)
-        {
-            string Result;
-            var rr = Input.Split(".");
-            int len = rr.Length;
-            string NewStr = "";
-            int i = 0;
-            while (i < len - 1)
-            {
-                NewStr += rr[i];
-                i++;
-            }
-            if (Num_v == 1)
-            {
-                Result = $"{NewStr}_v{Num_v}.{rr[i]}";
-            }
-            else
-                Result = $"{NewStr}_v{Num_v}.{rr.Last()}";
-            return Result;
-        }
-        private string CrNameWithoutExt(string FileName)
-        {
-            string NewStr = "";
-            int i = 0;
-            var arr = FileName.Split(".");
-            int len = arr.Length;
-
-            while (i < len - 1)
-            {
-                NewStr += arr[i];
-                i++;
-            }
-            return NewStr;
+            this._configuration = configuration;
+            this._mapper = mapper;
         }
 
-        public string GetPath(string category, string FileName, int number)
+        public string GetPath(Categories category, string fileName, int number, string hashString)
         {
-            if ((category == "App" || category == "Presentation" || category == "Other"))
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            foreach (var version in _unitOfWork.Versions.GetAll(x => x.StrHash != null))
             {
-                var helper = FileName.Split(".");
-                string DirName;
-
-                if (helper == null)
-                    DirName = FileName;
-                else
-                    DirName = CrNameWithoutExt(FileName);
-
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == FileName);
-                if (Mat == null)
-                {
-                    Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + category + "/" + DirName);
-                    return "Files/" + category + "/" + DirName + "/" + CrName(FileName, number);
-                }
+                var mappedVersion = _mapper.Map<Version>(version);
+                if (mappedVersion.HashString == hashString)
+                    throw new VersionExistException("This version of material is already created, try to change it and upload again");
             }
-            return null;
+            var material = _mapper.Map<Material>(_unitOfWork.Materials.Find(u =>
+                u.Category == (int) category && u.Name == fileName));
+            if (material != null)
+                throw new MaterialExistException("Material is created already, try to create another one");
+            var path = _configuration.GetSection("FilePath").Value;
+            _unitOfWork.FileManager.CreateDirectory(path + GetName(fileName));
+            return "Files/" + GetName(fileName) + "/" + GetVersion(fileName, fileName, number);
         }
 
-        public Material CreateMaterial(Stream uploadedFile, string Category, string FileName, string WebRootPath, long Size)
+        public Material CreateMaterial(byte [] fileBytes, Categories category, string fileName, long size, string path, string hashString)
         {
-            Console.WriteLine($"v1{Category}");
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))      // !(_context.Files.Any(Mat => Mat.Name == uploadedFile.FileName) 
-            {
-                Directory.CreateDirectory("C:/Users/My/source/repos/ServerUpload7/Files/" + Category + "/" + FileName);
-                var Mat = new Material { Name = FileName, Category = Category };
-                var Vers = new Version { Name = CrName(FileName, 1), FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
-                Mat.Versions = new List<Version>();
-                Mat.Versions.Add(Vers);
-
-                _unitOfWork.Materials.Create(Mat);
-                return (Mat);
-            }
-            Console.WriteLine($"First contition falls {Category} ");
-            return (null);
+            var material = new Material { Name = fileName, Category = (int) category };
+            var version = new Version { Name = GetVersion(fileName, fileName, 1), HashString = hashString, FileSize = size, UploadTime = DateTime.Now, Material = material };
+            material.Versions = new List<Version> {version};
+            _unitOfWork.FileManager.SaveFile(path, fileBytes);
+            _unitOfWork.Materials.Create(_mapper.Map<DataMaterial>(material));
+            return (material);
         }
 
-        public string DownloadActualVersion(string Name, string Category)
+        public string DownloadActualVersion(string name, Categories category)
         {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
-            {
-               var material =  _unitOfWork.Materials.Find(m =>  m.Name == Name && m.Category == Category); // may not work properly
-                if (material == null)
-                    return null;
-               var version = material.Versions.Last();
-               return Category + "/" + CrNameWithoutExt(Name) + "/" + version.Name; 
-            }
-            return null;
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            var material =  _unitOfWork.Materials.Find(m =>  m.Name == name && m.Category == (int) category); 
+            if (material == null)
+                return null;
+            var version = material.Versions.Last();
+            return GetName(name) + "/" + version.Name;
         }
 
-        public Material GetMaterialInfo(string Name, string Category)
+        public Material GetMaterialInfo(string name, Categories category)
         {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
-            {
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); // may not work properly
-                return material;
-            }
-            return null;
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == (int) category); 
+            return _mapper.Map<Material>(material);
         }
 
-        public int ChangeCategory(string Name, string OldCategory, string NewCategory)
+        public Material ChangeCategory(string name, Categories oldCategory, Categories newCategory)
         {
-            if ((OldCategory == "App" || OldCategory == "Presentation" || OldCategory == "Other") && (NewCategory == "App" || NewCategory == "Presentation" || NewCategory == "Other") && OldCategory != NewCategory)
-            {
-                // check material
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == OldCategory); // may not work properly
-                var material2 = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == NewCategory);
-                if (material2 != null || material == null)
-                {
-                    return 0;
-                }
-                material.Category = NewCategory;
-                _unitOfWork.Materials.Save();
-                Directory.Move("C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + OldCategory + "/" + CrNameWithoutExt(material.Name), "C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/" + NewCategory + "/" + CrNameWithoutExt(material.Name));
-                return 1;
-            }
-            return 0;
+            if (!Enum.IsDefined(typeof(Categories), oldCategory) || !Enum.IsDefined(typeof(Categories), newCategory) ||
+                oldCategory == newCategory)
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            // check material
+            var material = _mapper.Map<Material>(_unitOfWork.Materials.Find(m => m.Name == name && m.Category == (int) oldCategory)); 
+            var material2 = _mapper.Map<Material>(_unitOfWork.Materials.Find(m => m.Name == name && m.Category == (int) newCategory));
+            if ( material == null)
+                throw new MaterialNotExistException("Changing category of unexisted material, try to create material first");
+            if (material2 != null)
+                throw new MaterialExistException("This material name is already exist in new category");
+            material.Category = (int) newCategory;
+            var updatedMaterial = _mapper.Map<Material>(_unitOfWork.Materials.Update(_mapper.Map<DataMaterial>(material)));
+            return updatedMaterial;
         }
 
-        public IEnumerable<Material> FilterMat(string Category)
+        public IEnumerable<Material> FilterMat(Categories category)
         {
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))
-            {
-
-                var Materials = _unitOfWork.Materials.GetAll(m => m.Category == Category);
-                return Materials;
-            }
-            return null;
-
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            var materials = _unitOfWork.Materials.GetAll(m => m.Category == (int) category);
+            var result = materials.Select(_mapper.Map<Material>).ToList();
+            return result.AsEnumerable();
         }
-
     }
 }

@@ -1,111 +1,74 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.Services;
-using ServerUpload7.DAL.Entities;
-using Version = ServerUpload7.DAL.Entities.Version;
-using System.IO;
-using ServerUpload7.DAL.Interfaces;
 using AutoMapper;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Exceptions;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.DAL.Interfaces;
+using DataVersion = ServerUpload.DAL.Entities.Version;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.BLL.Services
+
+namespace ServerUpload.BLL.Services
 {
-    public class VersionsService : IVersionsService
+    public class VersionsService : ServiceBase, IVersionsService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public VersionsService(IUnitOfWork unitOfWork)
+        public VersionsService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
         {
-            this._unitOfWork = unitOfWork;
+            this._mapper = mapper;
         }
-
-        private string CrName(string Input, int Num_v)
+        public string GetPath(Categories category, string materialName, string hashString, string fileName)
         {
-            string Result;
-            var rr = Input.Split(".");
-            int len = rr.Length;
-            string NewStr = "";
-            int i = 0;
-            while (i < len - 1)
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            var material = _unitOfWork.Materials.Find(m => m.Name == materialName && m.Category == (int) category);
+            if (material == null)
+                throw new MaterialNotExistException("Adding new version to unexisted material, try to create material first");
+            string directoryName = GetName(materialName);
+            foreach (var v in material.Versions)
             {
-                NewStr += rr[i];
-                i++;
+                var version = _mapper.Map<Version>(v);
+                if (version.HashString == hashString)
+                    throw new VersionExistException("This version of material is already created, try to change it and upload again");
             }
-            if (Num_v == 1)
-            {
-                Result = $"{NewStr}_v{Num_v}.{rr[i]}";
-            }
+            if (!fileName.Contains('.'))
+                return "Files/"  + directoryName + "/" + fileName + $"_v{material.Versions.Count + 1}";
             else
-                Result = $"{NewStr}_v{Num_v}.{rr.Last()}";
-            return Result;
+                return "Files/"  + directoryName + "/" + GetVersion(fileName, materialName, material.Versions.Count + 1);
+
         }
-        private string CrNameWithoutExt(string FileName)
+        public Version CreateVersion(byte [] fileBytes, string name, Categories category, long size, string path, string strHash, string fileName)
         {
-            string NewStr = "";
-            int i = 0;
-            var arr = FileName.Split(".");
-            int len = arr.Length;
+            var material = _unitOfWork.Materials.Find(u => u.Category == (int) category && u.Name == name);
+            /*
+            var Mat = _mapper.Map<MaterialDTO>(Material);
+            var Vers = new VersionDTO { Name = ICommon.GetVersion(FileName, Name, Mat.Versions.Count), hashString = hashString, FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
+            //         _unitOfWork.Versions.Create(_mapper.Map<Version>(Vers), FileBytes, path);
 
-            while (i < len - 1)
-            {
-                NewStr += arr[i];
-                i++;
-            }
-            return NewStr;
+            //           _unitOfWork.Materials.Update(_mapper.Map<Material>(Mat)); // порядок??
+
+            Mat.Versions.Add(Vers);
+            */
+            var version = new DataVersion { Name = GetVersion(fileName, name, material.Versions.Count + 1), StrHash = strHash, FileSize = size, UploadTime = DateTime.Now, Material = material };
+            material.Versions.Add(version);
+            _unitOfWork.FileManager.SaveFile(path, fileBytes);
+            _unitOfWork.Versions.Create(version);
+            _unitOfWork.Materials.Update(material);
+            _unitOfWork.Versions.Save();
+            return (_mapper.Map<Version>(version));
+                
         }
-        public string GetPath(string category, string FileName)
+        public string DownloadVersion(int number, string name, Categories category)
         {
-            if ((category == "App" || category == "Presentation" || category == "Other"))
-            {
-                var helper = FileName.Split(".");
-                string DirName;
-
-                if (helper == null)
-                    DirName = FileName;
-                else
-                    DirName = CrNameWithoutExt(FileName);
-
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == category && u.Name == FileName);
-
-                if (Mat != null)            // ********** CHEK THIS ONE *********
-                {
-                    if (helper == null)
-                        return "Files/" + category + "/" + DirName + "/" + FileName + $"_v{Mat.Versions.Count + 1}";
-                    else
-                        return "Files/" + category + "/" + DirName + "/" + CrName(FileName, Mat.Versions.Count + 1);
-                }
-            }
-            return null;
+            if (!Enum.IsDefined(typeof(Categories), category))
+                throw new CategoryException("Invalid category. Use: App - 0, Presentation - 1, Other - 2.");
+            var material = _unitOfWork.Materials.Find(m => m.Name == name && m.Category == (int) category); 
+            if (material == null)
+                throw new MaterialNotExistException("Downloading version of unexisted material, try to create material first");
+            var version = material.Versions.ElementAt(number - 1);          
+            return GetName(name) + "/" + version.Name;
         }
-        public Version CreateVersion(string Name, string Category, string WebRootPath, long Size)
-        {
-            if ((Category == "App" || Category == "Presentation" || Category == "Other"))      // !(_context.Files.Any(Mat => Mat.Name == uploadedFile.FileName) 
-            {
-                var Mat = _unitOfWork.Materials.Find(u => u.Category == Category && u.Name == Name);
-                if (Mat == null)
-                    return null;
-                var Vers = new Version { Name = CrName(Name, Mat.Versions.Count + 1), FileSize = Size, UploadTime = DateTime.Now, Material = Mat };
-                Mat.Versions.Add(Vers);
-                _unitOfWork.Versions.Create(Vers);
-                _unitOfWork.Versions.Save();
-                return (Vers);
-            }
-            return (null);
-        }
-        public string DownloadVers(int number, string Name, string Category)
-        {
-            if (Category == "App" || Category == "Presentation" || Category == "Other")
-            {
-                var material = _unitOfWork.Materials.Find(m => m.Name == Name && m.Category == Category); // may not work properly
-                if (material == null)
-                    return null;
-                var version = material.Versions[number - 1];
-                return Category + "/" + CrNameWithoutExt(Name) + "/" + version.Name; // + "/" + version.extention
-            }
-            return null;
-        }
-
     }
 }

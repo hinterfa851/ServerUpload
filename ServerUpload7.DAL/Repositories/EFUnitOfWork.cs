@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.DAL.EF;
 using Microsoft.EntityFrameworkCore;
-using Version = ServerUpload7.DAL.Entities.Version;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Entities;
+using ServerUpload.DAL.Interfaces;
+using Version = ServerUpload.DAL.Entities.Version;
 
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
     public class EFUnitOfWork : IUnitOfWork
     {
-        // **** USELESS???? *****
         
         private ApplicationContext db;
         private MaterialsRepository materialRepository;
         private VersionsRepository versionRepository;
+        private FileManager fileManager;
 
         public EFUnitOfWork(DbContextOptions connectionString)
         {
@@ -35,13 +31,25 @@ namespace ServerUpload7.DAL.Repositories
         }
 
         public IRepository<Version> Versions
-       // public VersionsRepository Versions
         {
             get
             {
                 if (versionRepository == null)
                     versionRepository = new VersionsRepository(db);
                 return versionRepository;
+            }
+        }
+
+        public IFileManager FileManager
+        {
+            get
+            {
+                if (fileManager == null)
+                {
+                    fileManager = new FileManager();
+                }
+
+                return fileManager;
             }
         }
 

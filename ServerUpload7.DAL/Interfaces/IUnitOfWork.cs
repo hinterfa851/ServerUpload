@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.Entities;
-using Version = ServerUpload7.DAL.Entities.Version;
-using ServerUpload7.DAL.Repositories;
+using ServerUpload.DAL.Entities;
+using Version = ServerUpload.DAL.Entities.Version;
 
-namespace ServerUpload7.DAL.Interfaces
+namespace ServerUpload.DAL.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
@@ -15,5 +10,6 @@ namespace ServerUpload7.DAL.Interfaces
         public IRepository<Material> Materials { get; }
         public IRepository<Version> Versions { get; }
 
+        public IFileManager FileManager { get; }
     }
 }

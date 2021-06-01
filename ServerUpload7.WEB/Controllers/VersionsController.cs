@@ -1,59 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-using ServerUpload7.WEB.Resources;
-using ServerUpload7.DAL.Services;
-using Version = ServerUpload7.DAL.Entities.Version;
-using ServerUpload7.DAL.Entities;
-using System.IO;
 using AutoMapper;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using ServerUpload.Web.Dto;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Interfaces;
 
-namespace ServerUpload7.WEB.Controllers
+namespace ServerUpload.Web.Controllers
 {
+    [Route("version")]
     public class VersionsController : Controller
     {
         
         private readonly IVersionsService _versionsService;
-        private IMapper _mapper;
+        public readonly IConfiguration _configuration;
+        public IMapper _mapper;
         public IWebHostEnvironment _appEnvironment;
 
-        public VersionsController(IVersionsService materialService, IWebHostEnvironment appEnvironment, IMapper mapper)
+        public VersionsController(IVersionsService materialService, IWebHostEnvironment appEnvironment, IMapper mapper, IConfiguration configuration)
         {
             this._mapper = mapper;
             this._versionsService = materialService;
             this._appEnvironment = appEnvironment;
+            this._configuration = configuration;
         }
         
-        [HttpPost("CreateVersion")]
-        public  VersionView CreateVersion(IFormFile uploadedFile, string Name, string Category)
+        [HttpPost]
+        [Route("")]
+        public  VersionDto Version(IFormFile uploadedFile, string name, Categories category)
         {
-            VersionView version;
-
-            string path = _versionsService.GetPath(Category, Name);
-            if (path == null)
-                return null;
-            
-            using (var stream = new FileStream( path, FileMode.Create))
-            {
-                uploadedFile.CopyTo(stream);
-                version = _mapper.Map<VersionView>(_versionsService.CreateVersion(Name, Category, _appEnvironment.WebRootPath, uploadedFile.Length));
-
-            }
+            var memStream = new MemoryStream();
+            uploadedFile.CopyTo(memStream);
+            var fileBytes = memStream.ToArray();
+            string strHash  = _versionsService.GetHash(fileBytes);
+            string path = _versionsService.GetPath(category, name, strHash, uploadedFile.FileName);
+            var version = _mapper.Map<VersionDto>(_versionsService.CreateVersion(fileBytes, name, category, uploadedFile.Length, path, strHash, uploadedFile.FileName));
+            memStream.Dispose();
             return version;
         }
         
-        [HttpPost("DownloadVers")]
-        public FileResult DownloadVers(string Name, string Category, int Num)
+        [HttpGet]
+        [Route("")]
+        public FileResult Version(string name, Categories category, int num)
         {
-            var Result = _versionsService.DownloadVers(Num, Name, Category);
-            if (Result == null)
-                return null;
-            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Name.Split("/").Last()}");
-
+            var result = _versionsService.DownloadVersion(num, name, category);
+            return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{result.Split("/").Last()}");
         }
     }
 }

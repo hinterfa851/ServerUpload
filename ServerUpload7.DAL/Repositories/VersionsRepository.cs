@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.EF;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.DAL.Interfaces;
-using Version = ServerUpload7.DAL.Entities.Version;
 using Microsoft.EntityFrameworkCore;
-namespace ServerUpload7.DAL.Repositories
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Interfaces;
+using Version = ServerUpload.DAL.Entities.Version;
+
+namespace ServerUpload.DAL.Repositories
 {
        public class VersionsRepository : IRepository<Version>
     {
@@ -21,8 +19,7 @@ namespace ServerUpload7.DAL.Repositories
         
         public IEnumerable<Version> GetAll(Func<Version, Boolean> predicate)
         {
-            var ff = db.Versions.Include(o => o.Material);
-            return ff.Where(predicate);
+            return db.Versions.Include(o => o.Material).Where(predicate);
         }
 
         public Version Get(int id)
@@ -38,7 +35,6 @@ namespace ServerUpload7.DAL.Repositories
         
         public Version Find(Func<Version, Boolean> predicate)
         {
-            
             return db.Versions.FirstOrDefault(predicate);
         }
         public void Delete(int id)
@@ -48,6 +44,17 @@ namespace ServerUpload7.DAL.Repositories
                 db.Versions.Remove(order);
         }
         
+        public Version Update(Version version)
+        {
+            var dbEntity = db.Versions.FirstOrDefault(m => m.Id == version.Id);
+            dbEntity.Name = version.Name;
+            dbEntity.MaterialId = version.MaterialId;
+            dbEntity.FileSize = version.FileSize;
+            dbEntity.StrHash = version.StrHash;
+            dbEntity.Material = version.Material;
+            db.SaveChanges();
+            return dbEntity;
+        }
         public void Save()
         {
             db.SaveChanges();

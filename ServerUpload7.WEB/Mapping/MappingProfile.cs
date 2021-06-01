@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.WEB.Resources;
-using Version = ServerUpload7.DAL.Entities.Version;
+﻿using AutoMapper;
+using ServerUpload.Web.Dto;
+using DataVersion = ServerUpload.DAL.Entities.Version;
+using DataMaterial = ServerUpload.DAL.Entities.Material;
+using Material = ServerUpload.BLL.BusinessModels.Material;
+using Version = ServerUpload.BLL.BusinessModels.Version;
 
-namespace ServerUpload7.WEB.Mapping
+namespace ServerUpload.Web.Mapping
 {
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            CreateMap<Material, MaterialView>()
-            .ForMember("Vers_num", opt => opt.MapFrom(src => src.Versions.Count));
-            CreateMap<Version, VersionView>();
-            /*
-           .ForMember("Material", opt => opt.);
-            CreateMap<Version, VersionView>()
-           .ForMember("Material", opt => opt.MapFrom(src => mapperMat.Map<MaterialView>(src.Material)));
-            */
+            CreateMap<Material, MaterialDto>()
+            .ForMember("NumberOfVersions", opt => opt.MapFrom(src => src.Versions.Count));
+            CreateMap<Version, VersionDto>();
+            CreateMap<DataMaterial, Material>();
+            CreateMap<Material, DataMaterial>();
+            CreateMap<Version, DataVersion>()
+                .ForMember("StrHash", opt => opt.MapFrom(src => src.HashString));
+            CreateMap<DataVersion, Version>()
+                .ForMember("HashString", opt => opt.MapFrom(src => src.StrHash));
         }
     }
 }

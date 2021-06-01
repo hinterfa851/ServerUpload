@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServerUpload7.DAL.EF;
-using ServerUpload7.DAL.Entities;
-using ServerUpload7.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Entities;
+using ServerUpload.DAL.Interfaces;
 
-namespace ServerUpload7.DAL.Repositories
+namespace ServerUpload.DAL.Repositories
 {
     public class MaterialsRepository : IRepository<Material>
     {
@@ -21,8 +19,7 @@ namespace ServerUpload7.DAL.Repositories
 
         public IEnumerable<Material> GetAll(Func<Material, Boolean> predicate)
         {
-            var test = db.Materials.Include(o => o.Versions);
-            return test.Where(predicate);
+            return db.Materials.Include(o => o.Versions).Where(predicate);
         }
 
         public Material Get(int id)
@@ -39,16 +36,23 @@ namespace ServerUpload7.DAL.Repositories
      
         public Material Find(Func<Material, Boolean> predicate)
         {
-            var res =  db.Materials.Include(o => o.Versions);
-  //          var test = res.FirstOrDefaultAsync(x => predicate(x));            ???
-            return res.FirstOrDefault(predicate);
+            return db.Materials.Include(o => o.Versions).FirstOrDefault(predicate);
         }
 
+        public Material Update(Material material)
+        {
+            var dbEntity = db.Materials.FirstOrDefault(m => m.Id == material.Id);
+            dbEntity.Name = material.Name;
+            dbEntity.Category = material.Category;
+            dbEntity.Versions = material.Versions;
+            db.SaveChanges();
+            return dbEntity;
+        }
         public async void Delete(int id)
         {
-            var to_del = await db.Materials.FindAsync(id);
-            if (to_del != null)
-                db.Materials.Remove(to_del);
+            var dbEntity = await db.Materials.FindAsync(id);
+            if (dbEntity != null)
+                db.Materials.Remove(dbEntity);
         }
 
         public void Save()

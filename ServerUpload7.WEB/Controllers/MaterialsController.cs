@@ -1,90 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-using ServerUpload7.WEB.Resources;
-using ServerUpload7.BLL.Services;
+﻿using System.Collections.Generic;
 using System.IO;
-using ServerUpload7.DAL.Services;
+using System.Linq;
 using AutoMapper;
-using ServerUpload7.DAL.Entities;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using ServerUpload.Web.Dto;
+using ServerUpload.BLL.Enums;
+using ServerUpload.BLL.Interfaces;
 
-
-
-namespace ServerUpload7.WEB.Controllers
+namespace ServerUpload.Web.Controllers
 {
+
+    [Route("materials")]
     public class MaterialsController : Controller
     {
 
         private readonly IMaterialsService _materialsService;
-        private IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        public IMapper _mapper;
         public IWebHostEnvironment _appEnvironment;
         
-        public MaterialsController(IMaterialsService materialService, IWebHostEnvironment appEnvironment, IMapper mappe)
+        public MaterialsController(IMaterialsService materialService, IWebHostEnvironment appEnvironment, IMapper mapper, IConfiguration configuration)
         {
-            this._mapper = mappe;
+            this._mapper = mapper;
             this._materialsService = materialService;
             this._appEnvironment = appEnvironment;
+            this._configuration = configuration;
         }
 
-
-        [HttpPost("Crmat")]
-        public  MaterialView CreateMaterial(IFormFile uploadedFile, string category)
-        {
-            string path = _materialsService.GetPath(category, uploadedFile.FileName, 1);
-            if (path == null)
-            {
-                Console.WriteLine("null returned");
-                return null;
-            }
-            Console.WriteLine("null returned");
-            var Result = new MaterialView();
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                uploadedFile.CopyTo(stream);
-                Result = _mapper.Map<MaterialView>(_materialsService.CreateMaterial(stream, category, uploadedFile.FileName, _appEnvironment.WebRootPath, uploadedFile.Length));
-            }
-            return Result;
-        }
         
-        [HttpPost("DownloadActual")]
-        public  FileResult DownloadActualVersion(string Name, string Category)
+        [HttpPost]
+        [Route("")]
+        public  MaterialDto Material(IFormFile uploadedFile, Categories category)
         {
+            var memStream = new MemoryStream();
+            uploadedFile.CopyTo(memStream);
+            var fileBytes = memStream.ToArray();
+            string strHash = _materialsService.GetHash(fileBytes);
+            string path = _materialsService.GetPath(category, uploadedFile.FileName, 1, strHash);
+            var result = _mapper.Map<MaterialDto>(_materialsService.CreateMaterial(fileBytes, category, uploadedFile.FileName, uploadedFile.Length, path, strHash));
+            memStream.Dispose();
+            return result;
+        }
             
-            var Result =  _materialsService.DownloadActualVersion(Name, Category);
-            if (Result == null)
-                return null;
-            return PhysicalFile($"C:/Users/My/source/repos/ServerUpload7/ServerUpload7.WEB/Files/{Result}", System.Net.Mime.MediaTypeNames.Application.Octet, $"{Name.Split("/").Last()}");
+        
+        [HttpGet]
+        [Route("actual-version")]
+        public  FileResult ActualVersion(string name, Categories category)
+        { 
+            var result =  _materialsService.DownloadActualVersion(name, category);
+            return PhysicalFile(_configuration["FilePath"] + result, System.Net.Mime.MediaTypeNames.Application.Octet, $"{name.Split("/").Last()}");
         }
 
-        [HttpGet("GetMaterialInfo")]
-        public ActionResult<MaterialView> GetMaterialInfo(string Name, string Category)
+        [HttpGet]
+        [Route("info")]
+        public ActionResult<MaterialDto> GetMaterialInfo(string name, Categories category)
         {
-            var Result = _mapper.Map<MaterialView>(_materialsService.GetMaterialInfo(Name, Category));
-            if (Result == null)    
-                return null;
-            return Ok(Result);
+            var result = _mapper.Map<MaterialDto>(_materialsService.GetMaterialInfo(name, category));
+            return Ok(result);
         }
 
-        [HttpGet("ChangeCategory")]
-        public ActionResult ChangeCategory(string Name, string OldCategory, string NewCategory)
+        [HttpPut]
+        [Route("new-category")]
+        public ActionResult<MaterialDto> NewCategory(string name, Categories oldCategory, Categories newCategory)
         {
-            var Result = _materialsService.ChangeCategory(Name, OldCategory, NewCategory);
-            if (Result == 0)
-                return null;
-            return Ok();
+            var result = _mapper.Map<MaterialDto>(_materialsService.ChangeCategory(name, oldCategory, newCategory));
+            return Ok(result);
         }
 
-        [HttpGet("FilterMat")]
-        public ActionResult<List<MaterialView>> FilterMat(string Category)
+        [HttpGet]
+        [Route("info/category")]
+        public ActionResult<List<MaterialDto>> Category(Categories category)
         {
-            var Result = _mapper.Map<IEnumerable<MaterialView>>(_materialsService.FilterMat(Category));
-            if (Result == null)
-                return null;
-            return Ok(Result);
+            var result = _mapper.Map<IEnumerable<MaterialDto>>(_materialsService.FilterMat(category));
+            return Ok(result);
         }
     }
 }

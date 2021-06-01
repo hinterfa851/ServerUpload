@@ -1,31 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using ServerUpload7.DAL.EF;
-using Microsoft.EntityFrameworkCore;
-using ServerUpload7.DAL.Repositories;
-using ServerUpload7.DAL.Interfaces;
-using ServerUpload7.DAL.Services;
-using ServerUpload7.BLL.Services;
-using AutoMapper;
+using ServerUpload.BLL.Interfaces;
+using ServerUpload.BLL.Services;
+using ServerUpload.DAL.EF;
+using ServerUpload.DAL.Interfaces;
+using ServerUpload.DAL.Repositories;
 
-namespace ServerUpload7.WEB
+namespace ServerUpload.Web
 {
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder().AddConfiguration(configuration)
+                .SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("webconfig.json");
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -37,13 +35,14 @@ namespace ServerUpload7.WEB
             services.AddScoped<IUnitOfWork, EFUnitOfWork>();
             services.AddTransient<IMaterialsService, MaterialsService>();
             services.AddTransient<IVersionsService, VersionsService>();
+            services.AddAutoMapper(typeof(Startup));
+            services.AddTransient<IConfiguration>(provider => Configuration);
             services.AddControllers().AddNewtonsoftJson(options =>
                  options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ServerUpload7.WEB", Version = "v1" });
             });
-            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +54,25 @@ namespace ServerUpload7.WEB
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ServerUpload7.WEB v1"));
             }
+
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                ExceptionHandler = c =>
+                {
+                    var exception = c.Features.Get<IExceptionHandlerFeature>();
+                    var statusCode = exception.Error.GetType().Name switch
+                    {
+                        "CategoryException" => HttpStatusCode.BadRequest,
+                        "MaterialExistException" => HttpStatusCode.BadRequest,
+                        "MaterialNotExistException" => HttpStatusCode.NotFound,
+                        "VersionExistException" => HttpStatusCode.BadRequest,
+                        _ => HttpStatusCode.ServiceUnavailable
+                    };
+                    c.Response.StatusCode = (int)statusCode;
+
+                    return Task.CompletedTask;
+                }
+            });
 
             app.UseHttpsRedirection();
 
